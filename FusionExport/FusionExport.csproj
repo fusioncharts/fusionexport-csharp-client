@@ -46,7 +46,6 @@
     <Compile Include="Exporter.cs" />
     <Compile Include="ExportException.cs" />
     <Compile Include="ExportManager.cs" />
-    <Compile Include="ExportStateChangeEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -16,8 +16,8 @@ namespace FusionCharts.FusionExport.Client
         private int port;
 
         public ExportManager() {
-            this.host = "127.0.0.1";
-            this.port = 1337;
+            this.host = Constants.DEFAULT_HOST;
+            this.port = Constants.DEFAULT_PORT;
         }
 
         public ExportManager(string host, int port)

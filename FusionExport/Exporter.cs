@@ -12,8 +12,8 @@ namespace FusionCharts.FusionExport.Client
         private ExportDoneCallback exportDoneCallback;
         private ExportStateChangeCallback exportStateChangeCallback;
         private ExportConfig exportConfig;
-        private string exportServerHost = "127.0.0.1";
-        private int exportServerPort = 1337;
+        private string exportServerHost = Constants.DEFAULT_HOST;
+        private int exportServerPort = Constants.DEFAULT_PORT;
         private TcpClient tcpClient;
         private Thread exportConnectionThread;
 
@@ -89,7 +89,10 @@ namespace FusionCharts.FusionExport.Client
             } catch(Exception) {}
             finally
             {
-                this.exportDoneCallback(null, new ExportException("Exporting has been cancelled"));
+                if(this.exportDoneCallback != null)
+                {
+                    this.exportDoneCallback(null, new ExportException("Exporting has been cancelled"));
+                }
             }
         }
 
@@ -111,11 +114,17 @@ namespace FusionCharts.FusionExport.Client
                     dataReceived += Encoding.UTF8.GetString(readBuffer, 0, read);
                     dataReceived = this.ProcessDataReceived(dataReceived);
                 }
+
+                stream.Close();
+                this.tcpClient.Close();
             }
             catch (Exception ex)
             {
-                Console.Write(ex);
-                this.exportDoneCallback(null, new ExportException(ex.Message));
+                // Console.Write(ex);
+                if(this.exportDoneCallback != null)
+                {
+                    this.exportDoneCallback(null, new ExportException(ex.Message));
+                }
             }
         }
 
@@ -127,13 +136,20 @@ namespace FusionCharts.FusionExport.Client
                 string part = parts[i];
                 if(part.StartsWith(Constants.EXPORT_EVENT))
                 {
-                    this.exportStateChangeCallback(part.Remove(0, Constants.EXPORT_EVENT.Length));
+                    if(this.exportStateChangeCallback != null)
+                    {
+                        this.exportStateChangeCallback(part.Remove(0, Constants.EXPORT_EVENT.Length));
+                    }
                 } else if(part.StartsWith(Constants.EXPORT_DATA))
                 {
                     // TODO: handle error message
-                    this.exportDoneCallback(part.Remove(0, Constants.EXPORT_DATA.Length), null);
+                    if(this.exportDoneCallback != null)
+                    {
+                        this.exportDoneCallback(part.Remove(0, Constants.EXPORT_DATA.Length), null);
+                    }
                 }
             }
+            Console.Write(parts[parts.Length - 1]);
             return parts[parts.Length - 1];
         }
 
