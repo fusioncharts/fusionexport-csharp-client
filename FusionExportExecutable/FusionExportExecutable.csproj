@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FusionExport\FusionExport.csproj">
+      <Project>{ad0bce9c-0416-4670-bcc7-4d0651d5b9a7}</Project>
+      <Name>FusionExport</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

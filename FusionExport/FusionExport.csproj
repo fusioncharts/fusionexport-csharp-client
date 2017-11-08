@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="ExportDoneEventArgs.cs" />
+    <Compile Include="ExportConfig.cs" />
+    <Compile Include="ExportManager.cs" />
+    <Compile Include="ExportStateChangeEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

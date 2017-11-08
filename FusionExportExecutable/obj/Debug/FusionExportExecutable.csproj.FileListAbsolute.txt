@@ -1,0 +1,9 @@
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\bin\Debug\FusionExportExecutable.exe.config
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\bin\Debug\FusionExportExecutable.exe
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\bin\Debug\FusionExportExecutable.pdb
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\obj\Debug\FusionExportExecutable.csprojResolveAssemblyReference.cache
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\obj\Debug\FusionExportExecutable.csproj.CoreCompileInputs.cache
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\obj\Debug\FusionExportExecutable.exe
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\obj\Debug\FusionExportExecutable.pdb
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\bin\Debug\FusionExport.dll
+C:\Users\rousa\Desktop\Projects\fusion-export-csharp-client\FusionExportExecutable\bin\Debug\FusionExport.pdb
