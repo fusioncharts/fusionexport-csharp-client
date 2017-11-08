@@ -19,7 +19,7 @@ namespace FusionExportExecutable
         {
             string chartConfigFile = @"C:\Users\rousa\Desktop\Projects\fc-export-java-client\src\com\fusioncharts\chartConfig.json";
            
-            ExportManager em = new ExportManager();
+            ExportManager em = new ExportManager("127.0.0.1", 1337);
 
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
@@ -31,7 +31,11 @@ namespace FusionExportExecutable
             exportConfig = exportConfig.Clone();
             exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
-            // Console.Read(); 
+            Console.Read(); 
+
+
+            // todo:
+            // check cancel method
             
         }
 
@@ -50,6 +54,7 @@ namespace FusionExportExecutable
         static void OnExportStateChanged(Exporter exporter, string state)
         {
             Console.WriteLine("STATE " + exporter.Id + ":" + state);
+            exporter.Cancel();
         }
     }
 }

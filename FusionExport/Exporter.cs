@@ -97,6 +97,7 @@ namespace FusionCharts.FusionExport.Client
             {
                 if(this.tcpClient != null)
                 {
+                    this.tcpClient.GetStream().Dispose();
                     this.tcpClient.Close();
                 }
             } catch(Exception) {}
