@@ -7,6 +7,8 @@ using System.Net;
 using System.ComponentModel;
 using System.IO;
 using FusionCharts.FusionExport.Client;
+using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace FusionExportExecutable
 {
@@ -15,26 +17,39 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string file = @"C:\Users\rousa\Desktop\Projects\fc-export-java-client\src\com\fusioncharts\chartConfig.json";
+            string chartConfigFile = @"C:\Users\rousa\Desktop\Projects\fc-export-java-client\src\com\fusioncharts\chartConfig.json";
+           
+            ExportManager em = new ExportManager();
 
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText(file));
+            exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
+            Exporter exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
-            ExportManager em = new ExportManager();
-            Exporter exporter = em.Export(exportConfig, OnExportDoneCallback, OnExportStateChangeCallback);
+            exportConfig = exportConfig.Clone();
+            exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
+            exportConfig = exportConfig.Clone();
+            exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+
+            // Console.Read(); 
             
         }
 
-        static void OnExportDoneCallback(string result, ExportException error)
+        static void OnExportDone(Exporter exporter, string result, ExportException error)
         {
-            Console.WriteLine("DONE: " + result);
-            Console.WriteLine("DONE: " + error);
+
+            if(error != null)
+            {
+                Console.WriteLine("ERROR " + exporter.Id + ":" + error);
+            } else
+            {
+                Console.WriteLine("DONE " + exporter.Id + ":" + result);
+            }
         }
 
-        static void OnExportStateChangeCallback(string state)
+        static void OnExportStateChanged(Exporter exporter, string state)
         {
-            Console.WriteLine("STATE:" + state);
+            Console.WriteLine("STATE " + exporter.Id + ":" + state);
         }
     }
 }

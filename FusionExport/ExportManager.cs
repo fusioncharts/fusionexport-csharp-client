@@ -7,8 +7,8 @@ using System.Net.Sockets;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public delegate void ExportDoneCallback(string result, ExportException error);
-    public delegate void ExportStateChangeCallback(string state);
+    public delegate void ExportDoneListener(Exporter exporter, string result, ExportException error);
+    public delegate void ExportStateChangedListener(Exporter exporter, string state);
 
     public class ExportManager
     {
@@ -46,25 +46,25 @@ namespace FusionCharts.FusionExport.Client
             return exporter;
         }
 
-        public Exporter Export(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback)
+        public Exporter Export(ExportConfig exportConfig, ExportDoneListener exportDoneListener)
         {
-            Exporter exporter = new Exporter(exportConfig, exportDoneCallback);
+            Exporter exporter = new Exporter(exportConfig, exportDoneListener);
             exporter.SetExportConnectionConfig(this.host, this.port);
             exporter.Start();
             return exporter;
         }
 
-        public Exporter Export(ExportConfig exportConfig, ExportStateChangeCallback exportStateChangeCallback)
+        public Exporter Export(ExportConfig exportConfig, ExportStateChangedListener exportStateChangedListener)
         {
-            Exporter exporter = new Exporter(exportConfig, exportStateChangeCallback);
+            Exporter exporter = new Exporter(exportConfig, exportStateChangedListener);
             exporter.SetExportConnectionConfig(this.host, this.port);
             exporter.Start();
             return exporter;
         }
 
-        public Exporter Export(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback, ExportStateChangeCallback exportStateChangeCallback)
+        public Exporter Export(ExportConfig exportConfig, ExportDoneListener exportDoneListener, ExportStateChangedListener exportStateChangedListener)
         {
-            Exporter exporter = new Exporter(exportConfig, exportDoneCallback, exportStateChangeCallback);
+            Exporter exporter = new Exporter(exportConfig, exportDoneListener, exportStateChangedListener);
             exporter.SetExportConnectionConfig(this.host, this.port);
             exporter.Start();
             return exporter;

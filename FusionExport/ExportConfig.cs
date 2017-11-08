@@ -23,9 +23,54 @@ namespace FusionCharts.FusionExport.Client
             return configs[configName];
         }
 
+        public bool Remove(string configName)
+        {
+            return this.configs.Remove(configName);
+        }
+
+        public bool Has(string configName)
+        {
+            return this.configs.ContainsKey(configName);
+        }
+
         public void Clear()
         {
             this.configs.Clear();
+        }
+
+        public int Count
+        {
+            get { return this.configs.Count; }
+        }
+        
+        public string[] ConfigNames()
+        {
+            List<string> configNames = new List<string>();
+            foreach (string key in this.configs.Keys)
+            {
+                configNames.Add(key);
+            }
+            return configNames.ToArray();
+        }
+
+        public string[] ConfigValues()
+        {
+            List<string> configValues = new List<string>();
+            foreach (string value in this.configs.Values)
+            {
+                configValues.Add(value);
+            }
+            return configValues.ToArray();
+        }
+
+        public ExportConfig Clone()
+        {
+            ExportConfig newExportConfig = new ExportConfig();
+            foreach (KeyValuePair<string, string> config in this.configs)
+            {
+                newExportConfig.Set(config.Key, config.Value);
+            }
+            return newExportConfig;
         }
 
         public string GetFormattedConfigs()

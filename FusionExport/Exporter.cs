@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -9,36 +10,43 @@ namespace FusionCharts.FusionExport.Client
 {
     public class Exporter
     {
-        private ExportDoneCallback exportDoneCallback;
-        private ExportStateChangeCallback exportStateChangeCallback;
+        private static int nextExportId = 0;
+
+        private ExportDoneListener exportDoneListener;
+        private ExportStateChangedListener exportStateChangedListener;
         private ExportConfig exportConfig;
         private string exportServerHost = Constants.DEFAULT_HOST;
         private int exportServerPort = Constants.DEFAULT_PORT;
         private TcpClient tcpClient;
-        private Thread exportConnectionThread;
+        private Thread socketConnectionThread;
+        private int id = 0;
 
         public Exporter(ExportConfig exportConfig)
         {
             this.exportConfig = exportConfig;
+            this.id = Exporter.nextExportId++;
         }
 
-        public Exporter(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback)
+        public Exporter(ExportConfig exportConfig, ExportDoneListener exportDoneListener)
         {
             this.exportConfig = exportConfig;
-            this.exportDoneCallback = exportDoneCallback;
+            this.exportDoneListener = exportDoneListener;
+            this.id = Exporter.nextExportId++;
         }
 
-        public Exporter(ExportConfig exportConfig, ExportStateChangeCallback exportStateChangeCallback)
+        public Exporter(ExportConfig exportConfig, ExportStateChangedListener exportStateChangedListener)
         {
             this.exportConfig = exportConfig;
-            this.exportStateChangeCallback = exportStateChangeCallback;
+            this.exportStateChangedListener = exportStateChangedListener;
+            this.id = Exporter.nextExportId++;
         }
 
-        public Exporter(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback, ExportStateChangeCallback exportStateChangeCallback)
+        public Exporter(ExportConfig exportConfig, ExportDoneListener exportDoneListener, ExportStateChangedListener exportStateChangedListener)
         {
             this.exportConfig = exportConfig;
-            this.exportDoneCallback = exportDoneCallback;
-            this.exportStateChangeCallback = exportStateChangeCallback;
+            this.exportDoneListener = exportDoneListener;
+            this.exportStateChangedListener = exportStateChangedListener;
+            this.id = Exporter.nextExportId++;
         }
 
         public void SetExportConnectionConfig(string exportServerHost, int exportServerPort)
@@ -52,14 +60,14 @@ namespace FusionCharts.FusionExport.Client
             get { return exportConfig; }
         }
 
-        public ExportDoneCallback ExportDoneCallback
+        public ExportDoneListener ExportDoneListener
         {
-            get { return exportDoneCallback; }
+            get { return exportDoneListener; }
         }
 
-        public ExportStateChangeCallback ExportStateChangeCallback
+        public ExportStateChangedListener ExportStateChanged
         {
-            get { return exportStateChangeCallback; }
+            get { return exportStateChangedListener; }
         }
 
         public string ExportServerHost
@@ -72,10 +80,15 @@ namespace FusionCharts.FusionExport.Client
             get { return exportServerPort; }
         }
 
+        public int Id
+        {
+            get { return this.id; }
+        }
+
         public void Start()
         {
-            this.exportConnectionThread = new Thread(new ThreadStart(HandleSocketConnection));
-            this.exportConnectionThread.Start();
+            this.socketConnectionThread = new Thread(new ThreadStart(HandleSocketConnection));
+            this.socketConnectionThread.Start();
         }
 
         public void Cancel()
@@ -89,10 +102,7 @@ namespace FusionCharts.FusionExport.Client
             } catch(Exception) {}
             finally
             {
-                if(this.exportDoneCallback != null)
-                {
-                    this.exportDoneCallback(null, new ExportException("Exporting has been cancelled"));
-                }
+                this.OnExportDone(null, new ExportException("Exporting has been cancelled"));
             }
         }
 
@@ -114,17 +124,16 @@ namespace FusionCharts.FusionExport.Client
                     dataReceived += Encoding.UTF8.GetString(readBuffer, 0, read);
                     dataReceived = this.ProcessDataReceived(dataReceived);
                 }
-
-                stream.Close();
-                this.tcpClient.Close();
             }
             catch (Exception ex)
             {
-                // Console.Write(ex);
-                if(this.exportDoneCallback != null)
-                {
-                    this.exportDoneCallback(null, new ExportException(ex.Message));
-                }
+                this.OnExportDone(null, new ExportException(ex.Message));
+            }
+            finally
+            {
+                if(this.tcpClient != null)
+                    this.tcpClient.Close();
+
             }
         }
 
@@ -136,21 +145,49 @@ namespace FusionCharts.FusionExport.Client
                 string part = parts[i];
                 if(part.StartsWith(Constants.EXPORT_EVENT))
                 {
-                    if(this.exportStateChangeCallback != null)
-                    {
-                        this.exportStateChangeCallback(part.Remove(0, Constants.EXPORT_EVENT.Length));
-                    }
+                    this.ProcessExportStateChangedData(part);
                 } else if(part.StartsWith(Constants.EXPORT_DATA))
                 {
-                    // TODO: handle error message
-                    if(this.exportDoneCallback != null)
-                    {
-                        this.exportDoneCallback(part.Remove(0, Constants.EXPORT_DATA.Length), null);
-                    }
+                    this.ProcessExportDoneData(part);
                 }
             }
-            Console.Write(parts[parts.Length - 1]);
             return parts[parts.Length - 1];
+        }
+
+        private void ProcessExportStateChangedData(string data)
+        {
+            string state = data.Remove(0, Constants.EXPORT_EVENT.Length);
+            this.OnExportSateChanged(state);
+        }
+
+        private void ProcessExportDoneData(string data)
+        {
+            string exportResult = data.Remove(0, Constants.EXPORT_DATA.Length);
+            string exportError = this.CheckExportError(exportResult);
+            if (exportError == null)
+                this.OnExportDone(exportResult, null);
+            else
+                this.OnExportDone(null, new ExportException(exportError));
+        }
+
+        private string CheckExportError(string exportResult)
+        {
+            string trimmedExportResult = exportResult.Trim(new char[] { ' ', '\n', '\r', '{', '}' });
+            string errorPattern = "^\"error\"\\s*:\\s*\"(.+)\"$";
+            if (!Regex.IsMatch(trimmedExportResult, errorPattern, RegexOptions.Singleline))
+                return null;
+            Match match = Regex.Match(trimmedExportResult, errorPattern, RegexOptions.Singleline);
+            return match.Groups[1].Value;
+        }
+
+        private void OnExportSateChanged(string state)
+        {
+            this.exportStateChangedListener?.Invoke(this, state);
+        }
+
+        private void OnExportDone(string result, ExportException error)
+        {
+            this.exportDoneListener?.Invoke(this, result, error);
         }
 
         private string GetFormattedExportConfigs()
