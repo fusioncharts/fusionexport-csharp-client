@@ -9,16 +9,16 @@ namespace FusionCharts.FusionExport.Client
 
     public class ExportStateChangeEventArgs : EventArgs
     {
-        private string meta;
+        private string state;
 
-        public ExportStateChangeEventArgs(string meta)
+        public ExportStateChangeEventArgs(string state)
         {
-            this.meta = meta;
+            this.state = state;
         }
 
-        public string Meta
+        public string State
         {
-            get { return meta; }
+            get { return state; }
         }
     }
 }

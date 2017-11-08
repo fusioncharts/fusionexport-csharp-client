@@ -43,6 +43,8 @@
   <ItemGroup>
     <Compile Include="ExportDoneEventArgs.cs" />
     <Compile Include="ExportConfig.cs" />
+    <Compile Include="Exporter.cs" />
+    <Compile Include="ExportException.cs" />
     <Compile Include="ExportManager.cs" />
     <Compile Include="ExportStateChangeEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

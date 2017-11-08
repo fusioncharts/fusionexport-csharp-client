@@ -7,30 +7,25 @@ using System.Net.Sockets;
 
 namespace FusionCharts.FusionExport.Client
 {
+    public delegate void ExportDoneCallback(string result, ExportException error);
+    public delegate void ExportStateChangeCallback(string state);
+
     public class ExportManager
     {
-        public event ExportDoneEventHandler ExportDone;
-        public event ExportStateChangeEventHandler ExportStateChange;
-
         private string host;
         private int port;
-        private ExportConfig exportConfig;
-       // private TcpClient tcpClient;
 
-        public ExportManager(string host, int port, ExportConfig exportConfig)
-        {
-            this.host = host;
-            this.port = port;
-            this.exportConfig = exportConfig;
+        public ExportManager() {
+            this.host = "127.0.0.1";
+            this.port = 1337;
         }
 
         public ExportManager(string host, int port)
         {
             this.host = host;
             this.port = port;
-            this.exportConfig = new ExportConfig();
         }
-
+        
         public string Host
         {
             get { return host; }
@@ -43,47 +38,37 @@ namespace FusionCharts.FusionExport.Client
             set { port = value; }
         }
 
-        public ExportConfig ExportConfig
+        public Exporter Export(ExportConfig exportConfig)
         {
-            get { return exportConfig; }
-            set { exportConfig = value; }
+            Exporter exporter = new Exporter(exportConfig);
+            exporter.SetExportConnectionConfig(this.host, this.port);
+            exporter.Start();
+            return exporter;
         }
 
-        public void Export(ExportConfig exportConfig)
+        public Exporter Export(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback)
         {
-            Thread th = new Thread(new ThreadStart(this.HandleSocketConnection));
-            th.Start();
+            Exporter exporter = new Exporter(exportConfig, exportDoneCallback);
+            exporter.SetExportConnectionConfig(this.host, this.port);
+            exporter.Start();
+            return exporter;
         }
 
-        public void Export()
+        public Exporter Export(ExportConfig exportConfig, ExportStateChangeCallback exportStateChangeCallback)
         {
-            this.Export(this.exportConfig);
+            Exporter exporter = new Exporter(exportConfig, exportStateChangeCallback);
+            exporter.SetExportConnectionConfig(this.host, this.port);
+            exporter.Start();
+            return exporter;
         }
 
-        private void HandleSocketConnection()
+        public Exporter Export(ExportConfig exportConfig, ExportDoneCallback exportDoneCallback, ExportStateChangeCallback exportStateChangeCallback)
         {
-            try
-            {
-                // this.tcpClient = new TcpClient(this.host, this.port);
-                
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                OnExportDone(new ExportDoneEventArgs(null, null));
-            }
+            Exporter exporter = new Exporter(exportConfig, exportDoneCallback, exportStateChangeCallback);
+            exporter.SetExportConnectionConfig(this.host, this.port);
+            exporter.Start();
+            return exporter;
         }
 
-        private void OnExportDone(ExportDoneEventArgs e)
-        {
-            if (this.ExportDone != null)
-                this.ExportDone(this, e);
-        }
-
-        private void OnExportStateChange(ExportStateChangeEventArgs e)
-        {
-            if (this.ExportStateChange != null)
-                this.ExportStateChange(this, e);
-        }
     }
 }

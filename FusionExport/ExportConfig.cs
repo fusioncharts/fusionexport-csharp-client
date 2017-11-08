@@ -23,6 +23,11 @@ namespace FusionCharts.FusionExport.Client
             return configs[configName];
         }
 
+        public void Clear()
+        {
+            this.configs.Clear();
+        }
+
         public string GetFormattedConfigs()
         {
             StringBuilder configsAsJSON = new StringBuilder();

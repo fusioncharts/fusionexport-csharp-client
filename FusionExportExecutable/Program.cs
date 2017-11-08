@@ -14,8 +14,18 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            Console.Write("sfsd");
+            string data = "THExxQUICKxxBROWNxxFOX";
+
+            string[] parts = data.Split(new string[] { "xx" }, StringSplitOptions.None);
+            Console.Write(parts.Length);
+
+
+            Console.Read();
         }
 
+        static void exportDone(object target, ExportDoneEventArgs e)
+        {
+            
+        }
     }
 }
