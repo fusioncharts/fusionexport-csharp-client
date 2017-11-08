@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExportDoneEventArgs.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="ExportConfig.cs" />
     <Compile Include="Exporter.cs" />
     <Compile Include="ExportException.cs" />

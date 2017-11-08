@@ -37,7 +37,10 @@ namespace FusionCharts.FusionExport.Client
                 string keyValuePair = String.Format("\"{0}\": {1}, ", config.Key, formattedConfigValue);
                 configsAsJSON.Append(keyValuePair);
             }
-            configsAsJSON.Remove(configsAsJSON.Length - 2, 2); // remove last comma and space characters
+            if(configsAsJSON.Length >= 2)
+            {
+                configsAsJSON.Remove(configsAsJSON.Length - 2, 2); // remove last comma and space characters
+            }
             configsAsJSON.Insert(0, "{ ");
             configsAsJSON.Append(" }");
             return configsAsJSON.ToString();

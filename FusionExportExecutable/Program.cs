@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.ComponentModel;
+using System.IO;
 using FusionCharts.FusionExport.Client;
 
 namespace FusionExportExecutable
@@ -14,18 +15,16 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string data = "THExxQUICKxxBROWNxxFOX";
+            string file = @"C:\Users\rousa\Desktop\Projects\fc-export-java-client\src\com\fusioncharts\chartConfig.json";
+            ExportConfig exportConfig = new ExportConfig();
+            exportConfig.Set("chartConfig", File.ReadAllText(file));
 
-            string[] parts = data.Split(new string[] { "xx" }, StringSplitOptions.None);
-            Console.Write(parts.Length);
-
+            ExportManager em = new ExportManager("127.0.0.1", 1377);
+            Exporter exporter = em.Export(exportConfig);
 
             Console.Read();
         }
 
-        static void exportDone(object target, ExportDoneEventArgs e)
-        {
-            
-        }
+        
     }
 }
