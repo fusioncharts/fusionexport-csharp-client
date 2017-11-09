@@ -7,8 +7,8 @@ using System.Net.Sockets;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public delegate void ExportDoneListener(Exporter exporter, string result, ExportException error);
-    public delegate void ExportStateChangedListener(Exporter exporter, string state);
+    public delegate void ExportDoneListener(string result, ExportException error);
+    public delegate void ExportStateChangedListener(string state);
 
     public class ExportManager
     {

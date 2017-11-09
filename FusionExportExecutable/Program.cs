@@ -32,29 +32,23 @@ namespace FusionExportExecutable
             exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
             Console.Read(); 
-
-
-            // todo:
-            // check cancel method
-            
         }
 
-        static void OnExportDone(Exporter exporter, string result, ExportException error)
+        static void OnExportDone(string result, ExportException error)
         {
 
             if(error != null)
             {
-                Console.WriteLine("ERROR " + exporter.Id + ":" + error);
+                Console.WriteLine("ERROR: " + error);
             } else
             {
-                Console.WriteLine("DONE " + exporter.Id + ":" + result);
+                Console.WriteLine("DONE: " + result);
             }
         }
 
-        static void OnExportStateChanged(Exporter exporter, string state)
+        static void OnExportStateChanged(string state)
         {
-            Console.WriteLine("STATE " + exporter.Id + ":" + state);
-            exporter.Cancel();
+            Console.WriteLine("STATE: " + state);
         }
     }
 }

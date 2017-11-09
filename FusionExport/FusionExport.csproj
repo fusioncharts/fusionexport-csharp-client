@@ -7,7 +7,7 @@
     <ProjectGuid>{AD0BCE9C-0416-4670-BCC7-4D0651D5B9A7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FusionExport</RootNamespace>
+    <RootNamespace>FusionCharts.FusionExport.Client</RootNamespace>
     <AssemblyName>FusionExport</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

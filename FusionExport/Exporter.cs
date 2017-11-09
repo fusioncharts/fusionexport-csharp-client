@@ -10,8 +10,6 @@ namespace FusionCharts.FusionExport.Client
 {
     public class Exporter
     {
-        private static int nextExportId = 0;
-
         private ExportDoneListener exportDoneListener;
         private ExportStateChangedListener exportStateChangedListener;
         private ExportConfig exportConfig;
@@ -19,26 +17,22 @@ namespace FusionCharts.FusionExport.Client
         private int exportServerPort = Constants.DEFAULT_PORT;
         private TcpClient tcpClient;
         private Thread socketConnectionThread;
-        private int id = 0;
 
         public Exporter(ExportConfig exportConfig)
         {
             this.exportConfig = exportConfig;
-            this.id = Exporter.nextExportId++;
         }
 
         public Exporter(ExportConfig exportConfig, ExportDoneListener exportDoneListener)
         {
             this.exportConfig = exportConfig;
             this.exportDoneListener = exportDoneListener;
-            this.id = Exporter.nextExportId++;
         }
 
         public Exporter(ExportConfig exportConfig, ExportStateChangedListener exportStateChangedListener)
         {
             this.exportConfig = exportConfig;
             this.exportStateChangedListener = exportStateChangedListener;
-            this.id = Exporter.nextExportId++;
         }
 
         public Exporter(ExportConfig exportConfig, ExportDoneListener exportDoneListener, ExportStateChangedListener exportStateChangedListener)
@@ -46,7 +40,6 @@ namespace FusionCharts.FusionExport.Client
             this.exportConfig = exportConfig;
             this.exportDoneListener = exportDoneListener;
             this.exportStateChangedListener = exportStateChangedListener;
-            this.id = Exporter.nextExportId++;
         }
 
         public void SetExportConnectionConfig(string exportServerHost, int exportServerPort)
@@ -78,11 +71,6 @@ namespace FusionCharts.FusionExport.Client
         public int ExportServerPort
         {
             get { return exportServerPort; }
-        }
-
-        public int Id
-        {
-            get { return this.id; }
         }
 
         public void Start()
@@ -183,12 +171,12 @@ namespace FusionCharts.FusionExport.Client
 
         private void OnExportSateChanged(string state)
         {
-            this.exportStateChangedListener?.Invoke(this, state);
+            this.exportStateChangedListener?.Invoke(state);
         }
 
         private void OnExportDone(string result, ExportException error)
         {
-            this.exportDoneListener?.Invoke(this, result, error);
+            this.exportDoneListener?.Invoke(result, error);
         }
 
         private string GetFormattedExportConfigs()
