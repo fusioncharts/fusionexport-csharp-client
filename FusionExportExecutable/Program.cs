@@ -21,15 +21,16 @@ namespace FusionExportExecutable
            
             ExportManager em = new ExportManager("127.0.0.1", 1337);
 
+            // f
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
             Exporter exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
             exportConfig = exportConfig.Clone();
-            exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+           // exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
             exportConfig = exportConfig.Clone();
-            exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+           // exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
             Console.Read(); 
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Sockets;
@@ -53,7 +52,7 @@ namespace FusionCharts.FusionExport.Client
             get { return exportConfig; }
         }
 
-        public ExportDoneListener ExportDoneListener
+        public ExportDoneListener ExportDone
         {
             get { return exportDoneListener; }
         }
