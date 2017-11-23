@@ -88,10 +88,6 @@ namespace FusionCharts.FusionExport.Client
                     this.tcpClient.Close();
                 }
             } catch(Exception) {}
-            finally
-            {
-                this.OnExportDone(null, new ExportException("Exporting has been cancelled"));
-            }
         }
 
         private void HandleSocketConnection()
