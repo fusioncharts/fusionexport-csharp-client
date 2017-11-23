@@ -141,22 +141,22 @@ namespace FusionCharts.FusionExport.Client
         private void ProcessExportStateChangedData(string data)
         {
             string state = data.Remove(0, Constants.EXPORT_EVENT.Length);
-            this.OnExportSateChanged(state);
+            string exportError = this.CheckExportError(state);
+            if (exportError == null)
+                this.OnExportSateChanged(state);
+            else
+                this.OnExportDone(null, new ExportException(exportError));
         }
 
         private void ProcessExportDoneData(string data)
         {
             string exportResult = data.Remove(0, Constants.EXPORT_DATA.Length);
-            string exportError = this.CheckExportError(exportResult);
-            if (exportError == null)
-                this.OnExportDone(exportResult, null);
-            else
-                this.OnExportDone(null, new ExportException(exportError));
+            this.OnExportDone(exportResult, null);
         }
 
-        private string CheckExportError(string exportResult)
+        private string CheckExportError(string state)
         {
-            string trimmedExportResult = exportResult.Trim(new char[] { ' ', '\n', '\r', '{', '}' });
+            string trimmedExportResult = state.Trim(new char[] { ' ', '\n', '\r', '{', '}' });
             string errorPattern = "^\"error\"\\s*:\\s*\"(.+)\"$";
             if (!Regex.IsMatch(trimmedExportResult, errorPattern, RegexOptions.Singleline))
                 return null;
