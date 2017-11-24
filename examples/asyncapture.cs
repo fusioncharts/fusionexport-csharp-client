@@ -10,7 +10,7 @@ namespace FusionExportTest
         {
             string chartConfigFile = "fullpath/of/scrollchart.json";
             string exportServerIP = "127.0.0.1"; // The IP address of export server
-            string exportServerPort = 1337; // The Port of export server
+            int exportServerPort = 1337; // The Port of export server
 
             // The export configurations used by export server
             ExportConfig exportConfig = new ExportConfig();
