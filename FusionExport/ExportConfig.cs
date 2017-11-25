@@ -97,6 +97,10 @@ namespace FusionCharts.FusionExport.Client
             {
                 case "chartConfig":
                     return configValue;
+                case "asyncCapture":
+                    return configValue;
+                case "exportAsZip":
+                    return configValue;
                 default:
                     return String.Format("\"{0}\"", configValue);
             }
