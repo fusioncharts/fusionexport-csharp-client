@@ -97,10 +97,12 @@ namespace FusionCharts.FusionExport.Client
             {
                 case "chartConfig":
                     return configValue;
+                case "maxWaitForCaptureExit":
+                    return configValue;
                 case "asyncCapture":
-                    return configValue;
+                    return configValue.ToLower();
                 case "exportAsZip":
-                    return configValue;
+                    return configValue.ToLower();
                 default:
                     return String.Format("\"{0}\"", configValue);
             }
