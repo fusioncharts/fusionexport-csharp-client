@@ -14,7 +14,7 @@ namespace FusionExportTest
 
              // Instantiate the ExportManager class
             ExportManager em = new ExportManager();
-            // Call the export() method with the export config and the respective callbacks
+            // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
         
