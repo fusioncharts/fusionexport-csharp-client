@@ -8,20 +8,19 @@ namespace FusionExportTest
     {
         static void Main(string[] args)
         {
-            string chartConfigFile = "fullpath/of/dashboard_charts.json";
-            string exportServerIP = "127.0.0.1"; // The IP address of export server
-            int exportServerPort = 1337; // The Port of export server
-
-            // The export configurations used by export server
+            // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
+            exportConfig.Set("chartConfig", File.ReadAllText("fullpath/of/dashboard_charts.json"));
             exportConfig.Set("templateFilePath", "fullpath/of/template.html");
             exportConfig.Set("callbackFilePath", "fullpath/of/callback.js");
 
-            ExportManager em = new ExportManager(exportServerIP, exportServerPort);
+            // Instantiate the ExportManager class
+            ExportManager em = new ExportManager();
+            // Call the export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
         
+        // Called when export is done
         static void OnExportDone(string result, ExportException error)
         {
             if(error != null)
@@ -33,6 +32,7 @@ namespace FusionExportTest
             }
         }
         
+        // Called on each export state change
         static void OnExportStateChanged(string state)
         {
             Console.WriteLine("State: " + state);
