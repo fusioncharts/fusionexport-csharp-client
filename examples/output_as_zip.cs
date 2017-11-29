@@ -12,7 +12,7 @@ namespace FusionExportTest
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText("fullpath/of/bulk.json"));
             exportConfig.Set("exportAsZip", "true");
-s
+
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager();
             // Call the export() method with the export config and the respective callbacks
