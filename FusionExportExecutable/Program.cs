@@ -1,14 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
-using System.ComponentModel;
 using System.IO;
 using FusionCharts.FusionExport.Client;
-using System.Threading;
-using System.Text.RegularExpressions;
 
 namespace FusionExportExecutable
 {
@@ -17,20 +9,13 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string chartConfigFile = @"C:\Users\rousa\Desktop\Projects\fc-export-java-client\src\com\fusioncharts\chartConfig.json";
-           
-            ExportManager em = new ExportManager("127.0.0.1", 1337);
+            string chartConfigFile = "fullpath/of/chart-config.json";
 
-            // f
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
-            Exporter exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
-
-            exportConfig = exportConfig.Clone();
-           // exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
-
-            exportConfig = exportConfig.Clone();
-           // exporter = em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+            
+            ExportManager em = new ExportManager();
+            em.Export(exportConfig, OnExportDone, OnExportStateChanged);
 
             Console.Read(); 
         }
