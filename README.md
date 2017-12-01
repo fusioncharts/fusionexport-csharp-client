@@ -12,7 +12,7 @@ You can install the SDK using the NuGet package manager. To install, open the Nu
 run the following command:
 
 ```sh
-$ Install-Package FusionExport
+$ Install-Package FusionExport -Version 1.0.0-beta
 ```
 
 ## Getting Started
