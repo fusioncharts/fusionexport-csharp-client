@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("FusionExport")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Language SDK for FusionExport which enables exporting of charts & dashboards through C#.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("FusionCharts Technologies LLP")]
 [assembly: AssemblyProduct("FusionExport")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
