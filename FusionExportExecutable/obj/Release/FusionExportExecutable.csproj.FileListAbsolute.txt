@@ -1,0 +1,8 @@
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\bin\Release\FusionExportExecutable.exe.config
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\bin\Release\FusionExportExecutable.exe
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\bin\Release\FusionExportExecutable.pdb
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\bin\Release\FusionExport.dll
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\bin\Release\FusionExport.pdb
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\obj\Release\FusionExportExecutable.csprojResolveAssemblyReference.cache
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\obj\Release\FusionExportExecutable.exe
+C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExportExecutable\obj\Release\FusionExportExecutable.pdb
