@@ -8,7 +8,7 @@ Language SDK for FusionExport which enables exporting of charts & dashboards thr
 
 ## Installation
 
-You can install the SDK using the `NuGet` package manager. To install, open the NuGet package manager console and
+You can install the SDK using the NuGet package manager. To install, open the NuGet package manager console and
 run the following command:
 
 ```sh

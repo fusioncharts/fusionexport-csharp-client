@@ -9,7 +9,7 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string chartConfigFile = @"C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\examples\chart-config-file.json";
+            string chartConfigFile = "fullpath/of/chart-config.json";
 
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
