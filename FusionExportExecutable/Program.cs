@@ -9,13 +9,15 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string chartConfigFile = "fullpath/of/chart-config.json";
+            string chartConfigFile = "./static/chart-config.json";
 
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
-            
+
+
             ExportManager em = new ExportManager();
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+            File.WriteAllText("./a.json",exportConfig.GetFormattedConfigs());
 
             Console.Read(); 
         }

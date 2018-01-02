@@ -58,5 +58,10 @@
       <Name>FusionExport</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="static\chart-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
