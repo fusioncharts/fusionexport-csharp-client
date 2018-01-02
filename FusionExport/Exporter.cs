@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using System.Threading;
+using WebSocketSharp;
 
 namespace FusionCharts.FusionExport.Client
 {
@@ -13,8 +14,8 @@ namespace FusionCharts.FusionExport.Client
         private ExportConfig exportConfig;
         private string exportServerHost = Constants.DEFAULT_HOST;
         private int exportServerPort = Constants.DEFAULT_PORT;
-        private TcpClient tcpClient;
-        private Thread socketConnectionThread;
+        private WebSocket wsClient;
+        private Thread wsConnectionThread;
 
         public Exporter(ExportConfig exportConfig)
         {
@@ -73,63 +74,83 @@ namespace FusionCharts.FusionExport.Client
 
         public void Start()
         {
-            this.socketConnectionThread = new Thread(new ThreadStart(HandleSocketConnection));
-            this.socketConnectionThread.Start();
+            this.wsConnectionThread = new Thread(new ThreadStart(HandleWSConnection));
+            this.wsConnectionThread.Start();
         }
 
-        public void Cancel()
+        public void Cancel(CloseStatusCode statusCode = CloseStatusCode.Abnormal)
+        {
+            this.Close(statusCode);
+        }
+        public void Close(CloseStatusCode statusCode = CloseStatusCode.Normal)
         {
             try
             {
-                if(this.tcpClient != null)
+                if (this.wsClient != null)
                 {
-                    this.tcpClient.GetStream().Dispose();
-                    this.tcpClient.Close();
+                    this.wsClient.Close(statusCode);
                 }
-            } catch(Exception) {}
+            }
+            catch (Exception) { }
         }
 
-        private void HandleSocketConnection()
+        private void HandleWSConnection()
         {
-            try
-            {
-                this.tcpClient = new TcpClient(this.exportServerHost, this.exportServerPort);
-                NetworkStream stream = this.tcpClient.GetStream();
-                byte[] writeBuffer = Encoding.UTF8.GetBytes(this.GetFormattedExportConfigs());
-                stream.Write(writeBuffer, 0, writeBuffer.Length);
-                stream.Flush();
 
-                byte[] readBuffer = new byte[this.tcpClient.ReceiveBufferSize];
-                string dataReceived = "";
-                int read = 0;
-                while((read = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)
+            // Create full websocket path. This looks like `1.1.1.1:2020\a\b` (scheme://host:port/path?query),
+            // Currently, we join host and port using `:` (naive solution) to get this string.
+            //
+            // TODO: Ideally, we should parse hostname and put port number just after ip adress or host provided.
+            // This will take care of trailing `slash` and `path` in the url.
+            var fullWSPath = string.Join(":", new string[]{
+                    this.ExportServerHost,
+                    this.ExportServerPort.ToString()
+                });
+            // Create new WebSocket with this path
+            this.wsClient = new WebSocket(fullWSPath);
+
+            // Set incoming data handler before connecting
+            this.wsClient.OnMessage += (sender, e) =>
+            {
+                string dataReceived;
+
+                if (e.IsText)
                 {
-                    dataReceived += Encoding.UTF8.GetString(readBuffer, 0, read);
-                    dataReceived = this.ProcessDataReceived(dataReceived);
+                    dataReceived = e.Data;
                 }
-            }
-            catch (Exception ex)
-            {
-                this.OnExportDone(null, new ExportException(ex.Message));
-            }
-            finally
-            {
-                if(this.tcpClient != null)
-                    this.tcpClient.Close();
+                else
+                {
+                    dataReceived = Encoding.UTF8.GetString(e.RawData);
+                }
 
-            }
+                dataReceived = this.ProcessDataReceived(dataReceived);
+            };
+
+            // Set error handler
+            this.wsClient.OnError += (sender, e) =>
+            {
+                this.OnExportDone(null, new ExportException(e.Message));
+            };
+
+            // Connect to the websocket. Incoming data and error handlers should already be set.
+            this.wsClient.Connect();
+
+            // Send data as buffer
+            byte[] writeBuffer = Encoding.UTF8.GetBytes(this.GetFormattedExportConfigs());
+            wsClient.Send(writeBuffer);
         }
 
         private string ProcessDataReceived(string data)
         {
             string[] parts = data.Split(new string[] { Constants.UNIQUE_BORDER }, StringSplitOptions.None);
-            for(int i = 0; i<parts.Length - 1; i++)
+            for (int i = 0; i < parts.Length - 1; i++)
             {
                 string part = parts[i];
-                if(part.StartsWith(Constants.EXPORT_EVENT))
+                if (part.StartsWith(Constants.EXPORT_EVENT))
                 {
                     this.ProcessExportStateChangedData(part);
-                } else if(part.StartsWith(Constants.EXPORT_DATA))
+                }
+                else if (part.StartsWith(Constants.EXPORT_DATA))
                 {
                     this.ProcessExportDoneData(part);
                 }
@@ -171,6 +192,7 @@ namespace FusionCharts.FusionExport.Client
         private void OnExportDone(string result, ExportException error)
         {
             this.exportDoneListener?.Invoke(result, error);
+            this.Close();
         }
 
         private string GetFormattedExportConfigs()
