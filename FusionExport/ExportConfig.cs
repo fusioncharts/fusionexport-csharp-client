@@ -13,203 +13,162 @@ namespace FusionCharts.FusionExport.Client
 {
     public class ExportConfig
     {
-        [JsonObject(MemberSerialization.OptIn)]
-        public class ConfigSchema
+        public class MetadataElementSchema
         {
-            // Schema Properties
-            [JsonProperty]
-            public const string clientName = "C#";
-
-            [JsonProperty]
-            public Dictionary<string, object> chartConfig;
-
-            [JsonProperty("inputSVG")]
-            public string _inputSVGBase64Content;
-            public string inputSVG;
-
-            [JsonProperty("templateFilePath")]
-            public string _templateZipBase64Content;
-            public string templateFilePath;
-            public string resourceFilePath;
-
-            [JsonProperty("callbackFilePath")]
-            public string _callbackBase64Content;
-            public string callbackFilePath;
-
-            [JsonProperty]
-            public bool asyncCapture;
-
-            [JsonProperty]
-            public double maxWaitForCaptureExit;
-
-            [JsonProperty("dashboardLogo")]
-            public string _dashboardLogoBase64Content;
-            public string dashboardLogo;
-
-            [JsonProperty]
-            public string dashboardHeading;
-
-            [JsonProperty]
-            public string dashboardSubheading;
-
-            [JsonProperty("outputFileDefinition")]
-            public string _outputFileDefinitionContent;
-            public string outputFileDefinition;
-
-            [JsonProperty]
-            public string type;
-
-            [JsonProperty]
-            public string exportFile;
-
-            [JsonProperty]
-            public bool exportAsZip;
-
-            private class Resources
+            public enum ElementType
             {
-                public List<string> images = new List<string>() { };
-                public List<string> stylesheets = new List<string>() { };
-                public List<string> javascripts = new List<string>() { };
+                String,
+                boolean,
+                integer
+            };
+
+            public enum Converter
+            {
+                BooleanFromStringNumber,
+                NumberFromString
+            };
+
+
+            public ElementType type;
+            public Converter converter;
+        }
+        public class MetadataSchema : Dictionary<string, MetadataElementSchema>
+        {
+
+            public static MetadataSchema CreateFromMetaDataJSON()
+            {
+                var jsonContent = File.ReadAllText("../metadata/export-sdk-metadata.json");
+                return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
-            public void ProcessProperties()
+            public Dictionary<MetadataElementSchema.ElementType, Type> TypeMap = new Dictionary<MetadataElementSchema.ElementType, Type>()
             {
-                this._inputSVGBase64Content = EncodeFileContentToBase64(this.inputSVG);
-                this._callbackBase64Content = EncodeFileContentToBase64(this.callbackFilePath);
-                this._dashboardLogoBase64Content = EncodeFileContentToBase64(this.dashboardLogo);
+                {MetadataElementSchema.ElementType.String, typeof(string)},
+                {MetadataElementSchema.ElementType.boolean, typeof(bool)},
+                {MetadataElementSchema.ElementType.integer, typeof(int)},
+            };
 
-                this._outputFileDefinitionContent = File.ReadAllText(this.outputFileDefinition);
-
-                this._templateZipBase64Content = this.CreateBase64ZippedTemplate();
-            }
-
-            public string DeSerializeToJSON()
+            public Dictionary<MetadataElementSchema.Converter, Func<object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object>>()
             {
-                return JsonConvert.SerializeObject(this);
-            }
+                {MetadataElementSchema.Converter.BooleanFromStringNumber, (object configValue) => BooleanFromStringNumber(configValue)},
+                {MetadataElementSchema.Converter.NumberFromString, (object configValue) => NumberFromString(configValue)},
+            };
 
-            private static string EncodeFileContentToBase64(string filePath)
+            public static bool BooleanFromStringNumber(object configValue)
             {
-                Byte[] bytes = File.ReadAllBytes(filePath);
-                String base64Content = Convert.ToBase64String(bytes);
-
-                return base64Content;
-            }
-
-            private string CreateBase64ZippedTemplate()
-            {
-                // Load templateFilePath content as html page
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.Load(this.templateFilePath);
-
-                // Load resourceFilePath content (JSON) as instance of Resources
-                var resources = JsonConvert.DeserializeObject<Resources>(File.ReadAllText(resourceFilePath));
-
-                // Create map of (filepath within zip folder) : (filepath of original file)
-                var mapOriginalFilePathToZipPath = new Dictionary<string, string>();
-
-                // Find all link, script, img tags with local URL from loaded html
-                var filteredLinkTags = htmlDoc.DocumentNode
-                    .SelectNodes("//link")
-                    .Where((linkTag) => isLocalResource(linkTag.Attributes["href"].Value));
-
-                var filteredScriptTags = htmlDoc.DocumentNode
-                    .SelectNodes("//script")
-                    .Where((scriptTag) => isLocalResource(scriptTag.Attributes["src"].Value));
-
-                var filteredImageTags = htmlDoc.DocumentNode
-                    .SelectNodes("//img")
-                    .Where((imageTag) => isLocalResource(imageTag.Attributes["src"].Value));
-
-                // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
-                // which will be used within zip and change the URLs (within html) to this tempfilename.
-                foreach (var linkTag in filteredLinkTags)
+                if (configValue.GetType() == typeof(bool))
                 {
-                    var originalFilePath = linkTag.Attributes["href"].Value;
-                    var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
-
-                    var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                    mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
-
-                    linkTag.Attributes["href"].Value = withinZipFileName;
+                    return (bool)configValue;
                 }
-
-                foreach (var scriptTag in filteredScriptTags)
+                else if (configValue.GetType() == typeof(string))
                 {
-                    var originalFilePath = scriptTag.Attributes["src"].Value;
-                    var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
+                    string value = (string)configValue;
+                    value = value.ToLower();
 
-                    var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                    mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
-
-                    scriptTag.Attributes["href"].Value = withinZipFileName;
-                }
-
-                foreach (var imageTag in filteredImageTags)
-                {
-                    var originalFilePath = imageTag.Attributes["src"].Value;
-                    var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
-
-                    var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                    mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
-
-                    imageTag.Attributes["href"].Value = withinZipFileName;
-                }
-
-                // Put the modified template file + extracted resources from html + provided resource files in a temp folder
-                var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-
-                {
-                    // Write modified template file
-                    var htmlContent = htmlDoc.DocumentNode.OuterHtml;
-                    var templateWithinZipFullPath = Path.Combine(tempZipDirectoryPath, "template.html");
-
-                    File.WriteAllText(templateWithinZipFullPath, htmlContent);
-                }
-                {
-                    // Write extracted resources from html 
-                    foreach (var eachMap in mapOriginalFilePathToZipPath)
+                    if ((value == "true") || (value == "1"))
                     {
-                        var originalFilePath = eachMap.Key;
-                        var resourceWithinZipFullPath = GetFullPathWrtBasePath(eachMap.Value, tempZipDirectoryPath);
-
-                        File.Copy(originalFilePath, resourceWithinZipFullPath);
+                        return true;
+                    }
+                    else if ((value == "false") || (value == "0"))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException();
                     }
                 }
+                else if (configValue.GetType() == typeof(int))
                 {
-                    // Write provided resource files
+                    int value = (int)configValue;
 
-                    // All resource file path must be relative path
-                    foreach (var resourceList in new List<List<string>>() { resources.stylesheets, resources.javascripts, resources.images })
+                    if (value == 1)
                     {
-                        foreach (var resourceRelativePath in resourceList)
-                        {
-                            var sourceFullPath = GetFullPathWrtBasePath(resourceRelativePath, Path.GetDirectoryName(templateFilePath));
-                            var destinationFilePath = GetFullPathWrtBasePath(resourceRelativePath, tempZipDirectoryPath);
-
-                            File.Copy(sourceFullPath, destinationFilePath);
-                        }
+                        return true;
+                    }
+                    else if (value == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException();
                     }
                 }
-
-                // Zip the folder
-                var tempZipFilePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-                CreateZipFromDirectory(tempZipDirectoryPath, tempZipFilePath);
-
-                // Set this zip content to _templateZipBase64Content
-                return EncodeFileContentToBase64(tempZipFilePath);
-
-            }
-
-            private static void CreateZipFromDirectory(string sourceFolderPath, string destinationZipFolder)
-            {
-                using (ZipFile zip = new ZipFile())
+                else
                 {
-                    string[] files = Directory.GetFiles(sourceFolderPath);
-                    zip.AddFiles(files, ".");
-                    zip.Save(destinationZipFolder);
+                    throw new InvalidCastException();
                 }
             }
+
+            public static int NumberFromString(object configValue)
+            {
+                if (configValue.GetType() == typeof(int))
+                {
+                    return (int)configValue;
+                }
+                else if (configValue.GetType() == typeof(string))
+                {
+                    string value = (string)configValue;
+
+                    return Int32.Parse(value);
+                }
+                else
+                {
+                    throw new InvalidCastException();
+                }
+            }
+
+            public void CheckType(string configName, object configValue)
+            {
+                if (this.ContainsKey(configName))
+                {
+                    var metadataElement = this[configName];
+
+                    var expectedType = TypeMap[metadataElement.type];
+
+                    if (configValue.GetType() != expectedType)
+                    {
+                        throw new ArgumentException();
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException();
+                }
+            }
+
+            public object TryConvertType(string configName, object configValue)
+            {
+                if (this.ContainsKey(configName))
+                {
+                    var metadataElement = this[configName];
+
+                    object convertedValue;
+                    if (ConverterMap.ContainsKey(metadataElement.converter))
+                    {
+                        convertedValue = ConverterMap[metadataElement.converter](configValue);
+                    }
+                    else
+                    {
+                        convertedValue = configValue
+                    }
+
+                    return convertedValue;
+                }
+                throw new ArgumentException();
+            }
+        }
+
+
+
+        private MetadataSchema metadata;
+        private Dictionary<string, object> configs;
+
+        public ExportConfig()
+        {
+            this.metadata = MetadataSchema.CreateFromMetaDataJSON();
+            this.configs = new Dictionary<string, object>();
         }
 
         public static string GetFullPathWrtBasePath(string extraPath, string basePath)
@@ -238,38 +197,34 @@ namespace FusionCharts.FusionExport.Client
             return !remoteResourcePattern.IsMatch(testResourceFilePath.Trim());
         }
 
-        public string ToJSONString()
+        public void Set(string configName, object configValue)
         {
-            var configSchema = new ConfigSchema();
-            ConfigSchema.ProcessProperties();
+            configName = configName.ToLower();
 
-            return configSchema.DeSerializeToJSON();
-        }
+            configValue = this.metadata.TryConvertType(configName, configValue);
+            this.metadata.CheckType(configName, configValue);
 
-        private Dictionary<string, string> configs;
-
-        public ExportConfig()
-        {
-            this.configs = new Dictionary<string, string>();
-        }
-
-        public void Set(string configName, string configValue)
-        {
             configs[configName] = configValue;
         }
 
-        public string Get(string configName)
+        public object Get(string configName)
         {
+            configName = configName.ToLower();
+
             return configs[configName];
         }
 
         public bool Remove(string configName)
         {
+            configName = configName.ToLower();
+
             return this.configs.Remove(configName);
         }
 
         public bool Has(string configName)
         {
+            configName = configName.ToLower();
+
             return this.configs.ContainsKey(configName);
         }
 
@@ -293,10 +248,10 @@ namespace FusionCharts.FusionExport.Client
             return configNames.ToArray();
         }
 
-        public string[] ConfigValues()
+        public object[] ConfigValues()
         {
-            List<string> configValues = new List<string>();
-            foreach (string value in this.configs.Values)
+            List<object> configValues = new List<object>();
+            foreach (var value in this.configs.Values)
             {
                 configValues.Add(value);
             }
@@ -306,7 +261,7 @@ namespace FusionCharts.FusionExport.Client
         public ExportConfig Clone()
         {
             ExportConfig newExportConfig = new ExportConfig();
-            foreach (KeyValuePair<string, string> config in this.configs)
+            foreach (KeyValuePair<string, object> config in this.configs)
             {
                 newExportConfig.Set(config.Key, config.Value);
             }
@@ -315,37 +270,217 @@ namespace FusionCharts.FusionExport.Client
 
         public string GetFormattedConfigs()
         {
-            StringBuilder configsAsJSON = new StringBuilder();
-            foreach (KeyValuePair<string, string> config in this.configs)
-            {
-                string formattedConfigValue = this.GetFormattedConfigValue(config.Key, config.Value);
-                string keyValuePair = String.Format("\"{0}\": {1}, ", config.Key, formattedConfigValue);
-                configsAsJSON.Append(keyValuePair);
-            }
-            if (configsAsJSON.Length >= 2)
-            {
-                configsAsJSON.Remove(configsAsJSON.Length - 2, 2); // remove last comma and space characters
-            }
-            configsAsJSON.Insert(0, "{ ");
-            configsAsJSON.Append(" }");
-            return configsAsJSON.ToString();
+            this.ProcessProperties();
+            return JsonConvert.SerializeObject(this.configs);
         }
 
-        private string GetFormattedConfigValue(string configName, string configValue)
+        public void ProcessProperties()
         {
-            switch (configName)
+            var selfClone = this.Clone();
+
+            const string INPUTSVG = "inputSVG";
+            const string CALLBACKS = "callbacks";
+            const string DASHBOARDLOGO = "dashboardlogo";
+            const string OUTPUTFILE = "outputFile";
+
+            if (this.Has(INPUTSVG))
             {
-                case "chartConfig":
-                    return configValue;
-                case "maxWaitForCaptureExit":
-                    return configValue;
-                case "asyncCapture":
-                    return configValue.ToLower();
-                case "exportAsZip":
-                    return configValue.ToLower();
-                default:
-                    return String.Format("\"{0}\"", configValue);
+                var oldValue = (string)this.Get(INPUTSVG);
+                this.Remove(INPUTSVG);
+
+                this.Set(INPUTSVG, ReadFileContent(oldValue, encodeBase64:true));
+            }
+
+            if (this.Has(CALLBACKS))
+            {
+                var oldValue = (string)this.Get(CALLBACKS);
+                this.Remove(CALLBACKS);
+
+                this.Set(CALLBACKS, ReadFileContent(oldValue, encodeBase64: true));
+            }
+
+            if (this.Has(DASHBOARDLOGO))
+            {
+                var oldValue = (string)this.Get(DASHBOARDLOGO);
+                this.Remove(DASHBOARDLOGO);
+
+                this.Set(DASHBOARDLOGO, ReadFileContent(oldValue, encodeBase64: true));
+            }
+
+            if (this.Has(DASHBOARDLOGO))
+            {
+                var oldValue = (string)this.Get(DASHBOARDLOGO);
+                this.Remove(DASHBOARDLOGO);
+
+                this.Set(DASHBOARDLOGO, ReadFileContent(oldValue, encodeBase64: true));
+            }
+
+            if (this.Has(OUTPUTFILE))
+            {
+                var oldValue = (string)this.Get(OUTPUTFILE);
+                this.Remove(OUTPUTFILE);
+
+                this.Set(OUTPUTFILE, ReadFileContent(oldValue, encodeBase64: false));
+            }
+
+            this._templateZipBase64Content = this.CreateBase64ZippedTemplate();
+        }
+
+        private static string ReadFileContent(string potentiallyFilePath, bool encodeBase64 = false)
+        {
+            if (isLocalResource(potentiallyFilePath))
+            {
+                try
+                {
+                    string content;
+                    if (encodeBase64)
+                    {
+                        Byte[] bytes = File.ReadAllBytes(potentiallyFilePath);
+                        content = Convert.ToBase64String(bytes);
+                    }
+                    else
+                    {
+                        content = File.ReadAllText(potentiallyFilePath);
+                    }
+                    return content;
+                }
+                catch (Exception ex)
+                {
+                    if (
+                        (ex is PathTooLongException) ||
+                        (ex is DirectoryNotFoundException) ||
+                        (ex is IOException) ||
+                        (ex is FileNotFoundException)
+                        )
+                    {
+                        return potentiallyFilePath;
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+            }
+            else
+            {
+                return potentiallyFilePath;
+            }
+
+        }
+        private static void CreateZipFromDirectory(string sourceFolderPath, string destinationZipFolder)
+        {
+            using (ZipFile zip = new ZipFile())
+            {
+                string[] files = Directory.GetFiles(sourceFolderPath);
+                zip.AddFiles(files, ".");
+                zip.Save(destinationZipFolder);
             }
         }
+
+        private string CreateBase64ZippedTemplate()
+        {
+            // Load templateFilePath content as html page
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.Load(this.templateFilePath);
+
+            // Load resourceFilePath content (JSON) as instance of Resources
+            var resources = JsonConvert.DeserializeObject<Resources>(File.ReadAllText(resourceFilePath));
+
+            // Create map of (filepath within zip folder) : (filepath of original file)
+            var mapOriginalFilePathToZipPath = new Dictionary<string, string>();
+
+            // Find all link, script, img tags with local URL from loaded html
+            var filteredLinkTags = htmlDoc.DocumentNode
+                .SelectNodes("//link")
+                .Where((linkTag) => isLocalResource(linkTag.Attributes["href"].Value));
+
+            var filteredScriptTags = htmlDoc.DocumentNode
+                .SelectNodes("//script")
+                .Where((scriptTag) => isLocalResource(scriptTag.Attributes["src"].Value));
+
+            var filteredImageTags = htmlDoc.DocumentNode
+                .SelectNodes("//img")
+                .Where((imageTag) => isLocalResource(imageTag.Attributes["src"].Value));
+
+            // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
+            // which will be used within zip and change the URLs (within html) to this tempfilename.
+            foreach (var linkTag in filteredLinkTags)
+            {
+                var originalFilePath = linkTag.Attributes["href"].Value;
+                var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
+
+                var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
+
+                linkTag.Attributes["href"].Value = withinZipFileName;
+            }
+
+            foreach (var scriptTag in filteredScriptTags)
+            {
+                var originalFilePath = scriptTag.Attributes["src"].Value;
+                var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
+
+                var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
+
+                scriptTag.Attributes["href"].Value = withinZipFileName;
+            }
+
+            foreach (var imageTag in filteredImageTags)
+            {
+                var originalFilePath = imageTag.Attributes["src"].Value;
+                var withinZipFileName = GetRandomFileNameWithExtension(originalFilePath);
+
+                var resolvedOriginalFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                mapOriginalFilePathToZipPath[resolvedOriginalFilePath] = withinZipFileName;
+
+                imageTag.Attributes["href"].Value = withinZipFileName;
+            }
+
+            // Put the modified template file + extracted resources from html + provided resource files in a temp folder
+            var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+            {
+                // Write modified template file
+                var htmlContent = htmlDoc.DocumentNode.OuterHtml;
+                var templateWithinZipFullPath = Path.Combine(tempZipDirectoryPath, "template.html");
+
+                File.WriteAllText(templateWithinZipFullPath, htmlContent);
+            }
+            {
+                // Write extracted resources from html 
+                foreach (var eachMap in mapOriginalFilePathToZipPath)
+                {
+                    var originalFilePath = eachMap.Key;
+                    var resourceWithinZipFullPath = GetFullPathWrtBasePath(eachMap.Value, tempZipDirectoryPath);
+
+                    File.Copy(originalFilePath, resourceWithinZipFullPath);
+                }
+            }
+            {
+                // Write provided resource files
+
+                // All resource file path must be relative path
+                foreach (var resourceList in new List<List<string>>() { resources.stylesheets, resources.javascripts, resources.images })
+                {
+                    foreach (var resourceRelativePath in resourceList)
+                    {
+                        var sourceFullPath = GetFullPathWrtBasePath(resourceRelativePath, Path.GetDirectoryName(templateFilePath));
+                        var destinationFilePath = GetFullPathWrtBasePath(resourceRelativePath, tempZipDirectoryPath);
+
+                        File.Copy(sourceFullPath, destinationFilePath);
+                    }
+                }
+            }
+
+            // Zip the folder
+            var tempZipFilePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+            CreateZipFromDirectory(tempZipDirectoryPath, tempZipFilePath);
+
+            // Set this zip content to _templateZipBase64Content
+            return ReadFileContent(tempZipFilePath);
+
+        }
+
     }
 }
