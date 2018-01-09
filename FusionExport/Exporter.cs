@@ -102,7 +102,7 @@ namespace FusionCharts.FusionExport.Client
             //
             // TODO: Ideally, we should parse hostname and put port number just after ip adress or host provided.
             // This will take care of trailing `slash` and `path` in the url.
-            var fullWSPath = string.Join(":", new string[]{
+            var fullWSPath = "ws://" + string.Join(":", new string[]{
                     this.ExportServerHost,
                     this.ExportServerPort.ToString()
                 });

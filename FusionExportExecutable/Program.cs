@@ -10,16 +10,22 @@ namespace FusionExportExecutable
         static void Main(string[] args)
         {
             string chartConfigFile = "./static/chart-config.json";
+            string svgFile = "./static/sample.svg";
+            string resourcesFile = "./static/resources.json";
+            string templateFile = "./static/html/template.html";
 
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText(chartConfigFile));
+            exportConfig.Set("chartConfig", chartConfigFile);
+            //exportConfig.Set("inputSVG", svgFile);
+            //exportConfig.Set("template", templateFile);
+            //exportConfig.Set("resources", resourcesFile);
 
+            File.WriteAllText("./a.json",exportConfig.GetFormattedConfigs());
 
             ExportManager em = new ExportManager();
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
-            File.WriteAllText("./a.json",exportConfig.GetFormattedConfigs());
 
-            Console.Read(); 
+            Console.Read();
         }
 
         static void OnExportDone(string result, ExportException error)

@@ -1,4 +1,5 @@
-﻿using Glob;
+﻿using FusionCharts.FusionExport.Utils;
+using Glob;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System;
@@ -27,13 +28,15 @@ namespace FusionCharts.FusionExport.Client
             {
                 String,
                 boolean,
-                integer
+                Number
             };
+
 
             public enum Converter
             {
+                PassThrough,
                 BooleanFromStringNumber,
-                NumberFromString
+                NumberFromString,
             };
 
 
@@ -42,10 +45,15 @@ namespace FusionCharts.FusionExport.Client
         }
         public class MetadataSchema : Dictionary<string, MetadataElementSchema>
         {
+            [JsonConstructor]
+            public MetadataSchema() : base(StringComparer.OrdinalIgnoreCase)
+            {
+
+            }
 
             public static MetadataSchema CreateFromMetaDataJSON()
             {
-                var jsonContent = File.ReadAllText("../metadata/export-sdk-metadata.json");
+                var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resources.metadataContent);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
@@ -53,11 +61,12 @@ namespace FusionCharts.FusionExport.Client
             {
                 {MetadataElementSchema.ElementType.String, typeof(string)},
                 {MetadataElementSchema.ElementType.boolean, typeof(bool)},
-                {MetadataElementSchema.ElementType.integer, typeof(int)},
+                {MetadataElementSchema.ElementType.Number, typeof(int)},
             };
 
             public Dictionary<MetadataElementSchema.Converter, Func<object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object>>()
             {
+                {MetadataElementSchema.Converter.PassThrough, (object configValue) => configValue},
                 {MetadataElementSchema.Converter.BooleanFromStringNumber, (object configValue) => BooleanFromStringNumber(configValue)},
                 {MetadataElementSchema.Converter.NumberFromString, (object configValue) => NumberFromString(configValue)},
             };
@@ -168,6 +177,7 @@ namespace FusionCharts.FusionExport.Client
             }
         }
 
+
         private class ResourcesSchema
         {
             public string basePath;
@@ -177,9 +187,12 @@ namespace FusionCharts.FusionExport.Client
 
         private MetadataSchema metadata;
         private Dictionary<string, object> configs;
+        private bool enableTypeCheckAndConversion;
 
-        public ExportConfig()
+        public ExportConfig(bool enableTypeCheckAndConversion = true)
         {
+            this.enableTypeCheckAndConversion = enableTypeCheckAndConversion;
+
             this.metadata = MetadataSchema.CreateFromMetaDataJSON();
             this.configs = new Dictionary<string, object>();
         }
@@ -190,8 +203,11 @@ namespace FusionCharts.FusionExport.Client
         {
             configName = configName.ToLower();
 
-            configValue = this.metadata.TryConvertType(configName, configValue);
-            this.metadata.CheckType(configName, configValue);
+            if (enableTypeCheckAndConversion)
+            {
+                configValue = this.metadata.TryConvertType(configName, configValue);
+                this.metadata.CheckType(configName, configValue);
+            }
 
             configs[configName] = configValue;
         }
@@ -199,8 +215,12 @@ namespace FusionCharts.FusionExport.Client
         public object Get(string configName)
         {
             configName = configName.ToLower();
-
             return configs[configName];
+        }
+
+        public object GetValueOrDefault(string key, object defaultValue)
+        {
+            return this.configs.GetValueOrDefault(key, defaultValue);
         }
 
         public bool Remove(string configName)
@@ -266,6 +286,7 @@ namespace FusionCharts.FusionExport.Client
         public ExportConfig CloneWithProcessedProperties()
         {
             var selfClone = this.Clone();
+            selfClone.enableTypeCheckAndConversion = false;
 
             selfClone.Set(CLIENTNAME, "C#");
 
@@ -274,7 +295,7 @@ namespace FusionCharts.FusionExport.Client
                 var oldValue = (string)selfClone.Get(CHARTCONFIG);
                 selfClone.Remove(CHARTCONFIG);
 
-                selfClone.Set(INPUTSVG, ReadFileContent(CHARTCONFIG, encodeBase64: false));
+                selfClone.Set(CHARTCONFIG, ReadFileContent(oldValue, encodeBase64: false));
             }
 
             if (selfClone.Has(INPUTSVG))
@@ -321,8 +342,15 @@ namespace FusionCharts.FusionExport.Client
                 string contentZipbase64, templateFilePathWithinZip;
                 selfClone.CreateBase64ZippedTemplate(out contentZipbase64, out templateFilePathWithinZip);
 
-                selfClone.Set(RESOURCES, contentZipbase64);
-                selfClone.Set(TEMPLATE, templateFilePathWithinZip);
+                if (!string.IsNullOrEmpty(contentZipbase64))
+                {
+                    selfClone.Set(RESOURCES, contentZipbase64);
+                }
+                if (!string.IsNullOrEmpty(templateFilePathWithinZip))
+                {
+                    selfClone.Set(TEMPLATE, templateFilePathWithinZip);
+                }
+
             }
 
             return selfClone;
@@ -332,192 +360,208 @@ namespace FusionCharts.FusionExport.Client
 
         private void CreateBase64ZippedTemplate(out string outZipContentBase64, out string outTemplatePathWithinZip)
         {
-            var templateFilePath = (string)this.Get(TEMPLATE);
-            var resourceFilePath = (string)this.Get(RESOURCES);
+            var templateFilePath = (string)this.GetValueOrDefault(TEMPLATE, null);
+            var resourceFilePath = (string)this.GetValueOrDefault(RESOURCES, null);
 
-            // Load templateFilePath content as html page
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.Load(templateFilePath);
-
-            // Create map of (filepath within zip folder) : (filepath of original file)
-            var listExtractedPaths = new List<string>();
-
-            // Find all link, script, img tags with local URL from loaded html
-            var filteredLinkTags = htmlDoc.DocumentNode
-                .SelectNodes("//link")
-                .Where((linkTag) => isLocalResource(linkTag.Attributes["href"].Value));
-
-            var filteredScriptTags = htmlDoc.DocumentNode
-                .SelectNodes("//script")
-                .Where((scriptTag) => isLocalResource(scriptTag.Attributes["src"].Value));
-
-            var filteredImageTags = htmlDoc.DocumentNode
-                .SelectNodes("//img")
-                .Where((imageTag) => isLocalResource(imageTag.Attributes["src"].Value));
-
-            // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
-            // which will be used within zip and change the URLs (within html) to this tempfilename.
-            foreach (var linkTag in filteredLinkTags)
+            if (!String.IsNullOrEmpty(templateFilePath))
             {
-                var originalFilePath = linkTag.Attributes["href"].Value;
+                // Expand templateFilePath
+                templateFilePath = Path.GetFullPath(templateFilePath);
 
-                var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                listExtractedPaths.Add(resolvedFilePath);
-            }
+                // Load templateFilePath content as html page
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.Load(templateFilePath);
 
-            foreach (var scriptTag in filteredScriptTags)
-            {
-                var originalFilePath = scriptTag.Attributes["src"].Value;
+                // Create map of (filepath within zip folder) : (filepath of original file)
+                var listExtractedPaths = new List<string>();
 
-                var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                listExtractedPaths.Add(resolvedFilePath);
-            }
+                // Find all link, script, img tags with local URL from loaded html
+                var filteredLinkTags = EmptyListIfNull(htmlDoc.DocumentNode
+                    .SelectNodes("//link"))
+                    .Where((linkTag) => isLocalResource(linkTag.Attributes["href"].Value));
 
-            foreach (var imageTag in filteredImageTags)
-            {
-                var originalFilePath = imageTag.Attributes["src"].Value;
+                var filteredScriptTags = EmptyListIfNull(htmlDoc.DocumentNode
+                    .SelectNodes("//script"))
+                    .Where((scriptTag) => isLocalResource(scriptTag.Attributes["src"].Value));
 
-                var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
-                listExtractedPaths.Add(resolvedFilePath);
-            }
+                var filteredImageTags = EmptyListIfNull(htmlDoc.DocumentNode
+                    .SelectNodes("//img"))
+                    .Where((imageTag) => isLocalResource(imageTag.Attributes["src"].Value));
 
-            //// Put the modified template file + extracted resources from html + provided resource files in a temp folder
-            //var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-
-            //{
-            //    // Write modified template file
-            //    var htmlContent = htmlDoc.DocumentNode.OuterHtml;
-            //    var templateWithinZipFullPath = Path.Combine(tempZipDirectoryPath, "template.html");
-
-            //    File.WriteAllText(templateWithinZipFullPath, htmlContent);
-            //}
-            //{
-            //    // Write extracted resources from html 
-            //    foreach (var eachMap in listExtractedPaths)
-            //    {
-            //        var originalFilePath = eachMap.Key;
-            //        var resourceWithinZipFullPath = GetFullPathWrtBasePath(eachMap.Value, tempZipDirectoryPath);
-
-            //        File.Copy(originalFilePath, resourceWithinZipFullPath);
-            //    }
-            //}
-
-            List<string> listResourcePaths = new List<string>();
-            string baseDirectoryPath = null;
-
-            if (!string.IsNullOrEmpty(resourceFilePath))
-            {
-                // Resolve resource file full path
-                resourceFilePath = Path.GetFullPath(resourceFilePath);
-                // Get directory path, to be used for glob resolution
-                var resourceDirectoryPath = Path.GetDirectoryName(resourceFilePath);
-
-                // Load resourceFilePath content (JSON) as instance of Resources
-                var resources = JsonConvert.DeserializeObject<ResourcesSchema>(File.ReadAllText(resourceFilePath));
-
-                // Resolve include and exclude globs to find the final include list
+                // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
+                // which will be used within zip and change the URLs (within html) to this tempfilename.
+                foreach (var linkTag in filteredLinkTags)
                 {
-                    var listResourceIncludePaths = new List<string>();
-                    var listResourceExcludePaths = new List<string>();
+                    var originalFilePath = linkTag.Attributes["href"].Value;
 
-                    var root = new DirectoryInfo(resourceDirectoryPath);
+                    var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                    listExtractedPaths.Add(resolvedFilePath);
+                }
 
-                    foreach (var eachIncludePath in resources.include)
+                foreach (var scriptTag in filteredScriptTags)
+                {
+                    var originalFilePath = scriptTag.Attributes["src"].Value;
+
+                    var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                    listExtractedPaths.Add(resolvedFilePath);
+                }
+
+                foreach (var imageTag in filteredImageTags)
+                {
+                    var originalFilePath = imageTag.Attributes["src"].Value;
+
+                    var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
+                    listExtractedPaths.Add(resolvedFilePath);
+                }
+
+                //// Put the modified template file + extracted resources from html + provided resource files in a temp folder
+                //var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+                //{
+                //    // Write modified template file
+                //    var htmlContent = htmlDoc.DocumentNode.OuterHtml;
+                //    var templateWithinZipFullPath = Path.Combine(tempZipDirectoryPath, "template.html");
+
+                //    File.WriteAllText(templateWithinZipFullPath, htmlContent);
+                //}
+                //{
+                //    // Write extracted resources from html 
+                //    foreach (var eachMap in listExtractedPaths)
+                //    {
+                //        var originalFilePath = eachMap.Key;
+                //        var resourceWithinZipFullPath = GetFullPathWrtBasePath(eachMap.Value, tempZipDirectoryPath);
+
+                //        CopyFile(originalFilePath, resourceWithinZipFullPath);
+                //    }
+                //}
+
+                List<string> listResourcePaths = new List<string>();
+                string baseDirectoryPath = null;
+
+                if (!string.IsNullOrEmpty(resourceFilePath))
+                {
+                    // Resolve resource file full path
+                    resourceFilePath = Path.GetFullPath(resourceFilePath);
+                    // Get directory path, to be used for glob resolution
+                    var resourceDirectoryPath = Path.GetDirectoryName(resourceFilePath);
+
+                    // Load resourceFilePath content (JSON) as instance of Resources
+                    var resources = JsonConvert.DeserializeObject<ResourcesSchema>(File.ReadAllText(resourceFilePath));
+
+                    // Resolve include and exclude globs to find the final include list
                     {
-                        var matchedFiles = root.GlobFiles(eachIncludePath)
-                            .Select((fileInfo) => fileInfo.FullName)
-                            .ToList();
-                        listResourceIncludePaths.AddRange(matchedFiles);
+                        var listResourceIncludePaths = new List<string>();
+                        var listResourceExcludePaths = new List<string>();
+
+                        var root = new DirectoryInfo(resourceDirectoryPath);
+
+                        foreach (var eachIncludePath in resources.include)
+                        {
+                            var matchedFiles = root.GlobFiles(eachIncludePath)
+                                .Select((fileInfo) => fileInfo.FullName)
+                                .ToList();
+                            listResourceIncludePaths.AddRange(matchedFiles);
+                        }
+
+                        foreach (var eachExcludePath in resources.exclude)
+                        {
+                            var matchedFiles = root.GlobFiles(eachExcludePath)
+                                .Select((fileInfo) => fileInfo.FullName)
+                                .ToList();
+                            listResourceExcludePaths.AddRange(matchedFiles);
+                        }
+
+                        listResourcePaths = listResourceIncludePaths.Except(listResourceExcludePaths).ToList();
                     }
 
-                    foreach (var eachExcludePath in resources.exclude)
+                    baseDirectoryPath = resources.basePath;
+                }
+
+                // If basepath is not provided, find it from common ancestor directory of extracted file paths plus template
+                if (string.IsNullOrEmpty(baseDirectoryPath))
+                {
+                    var listExtractedPathsPlusTemplate = new List<string>();
+                    listExtractedPathsPlusTemplate.AddRange(listExtractedPaths);
+                    listExtractedPathsPlusTemplate.Add(templateFilePath);
+
+                    var commonDirectoryPath = GetCommonAncestorDirectory(listExtractedPathsPlusTemplate.ToArray());
+
+                    if (!string.IsNullOrEmpty(commonDirectoryPath))
                     {
-                        var matchedFiles = root.GlobFiles(eachExcludePath)
-                            .Select((fileInfo) => fileInfo.FullName)
-                            .ToList();
-                        listResourceExcludePaths.AddRange(matchedFiles);
+                        baseDirectoryPath = commonDirectoryPath;
                     }
-
-                    listResourcePaths = listResourceIncludePaths.Except(listResourceExcludePaths).ToList();
+                    else
+                    {
+                        throw new DirectoryNotFoundException("All the extracted resources and template might not be in the same drive");
+                    }
                 }
 
-                baseDirectoryPath = resources.basePath;
-            }
+                // Filter listResourcePaths to those only which are within basePath
+                listResourcePaths = listResourcePaths
+                    .Where((tmpPath) => IsWithinPath(tmpPath, baseDirectoryPath))
+                    .ToList();
 
-            // If basepath is not provided, find it from common ancestor directory of extracted file paths plus template
-            if (string.IsNullOrEmpty(baseDirectoryPath))
-            {
-                var listExtractedPathsPlusTemplate = new List<string>();
-                listExtractedPathsPlusTemplate.AddRange(listExtractedPaths);
-                listExtractedPathsPlusTemplate.Add(templateFilePath);
-
-                var commonDirectoryPath = GetCommonAncestorDirectory(listExtractedPathsPlusTemplate.ToArray());
-
-                if (!string.IsNullOrEmpty(commonDirectoryPath))
+                // Make map relative version of extracted and resource file paths (compared to basepath) with original filepath
+                var mapExtractedPathAbsToRel = new Dictionary<string, string>();
+                foreach (var tmpPath in listExtractedPaths)
                 {
-                    baseDirectoryPath = commonDirectoryPath;
+                    mapExtractedPathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
                 }
-                else
+
+                var mapResourcePathAbsToRel = new Dictionary<string, string>();
+                foreach (var tmpPath in listResourcePaths)
                 {
-                    throw new DirectoryNotFoundException("All the extracted resources and template might not be in the same drive");
+                    mapResourcePathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
                 }
+
+                var templateFilePathWithinZipRel = GetRelativePathFrom(templateFilePath, baseDirectoryPath);
+
+                // Create zip temp folder
+                var tempZipDirectoryPath = GetTempFolderName();
+                var tempZipFilePath = GetTempFileName();
+
+                // Foreach extracted, resource, template file, create reqd. directory within zip folder and copy them
+                foreach (KeyValuePair<string, string> entry in mapExtractedPathAbsToRel)
+                {
+                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
+                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
+
+                    Directory.CreateDirectory(directoryWithinZipAbs);
+
+                    CopyFile(entry.Key, filePathWithinZipAbs);
+                }
+                foreach (KeyValuePair<string, string> entry in mapResourcePathAbsToRel)
+                {
+                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
+                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
+
+                    Directory.CreateDirectory(directoryWithinZipAbs);
+                    CopyFile(entry.Key, filePathWithinZipAbs);
+                }
+
+                {
+                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, templateFilePathWithinZipRel);
+                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
+
+                    Directory.CreateDirectory(directoryWithinZipAbs);
+                    CopyFile(templateFilePath, filePathWithinZipAbs);
+                }
+
+                CreateZipFromDirectory(tempZipDirectoryPath, tempZipFilePath);
+
+                // Set this zip content to _templateZipBase64Content
+                outZipContentBase64 = ReadFileContent(tempZipFilePath, encodeBase64: true);
+                outTemplatePathWithinZip = templateFilePathWithinZipRel;
+
+                // Delete temp zip folder and temp zip file
+                Directory.Delete(tempZipDirectoryPath, true);
+                File.Delete(tempZipFilePath);
             }
-
-            // Filter listResourcePaths to those only which are within basePath
-            listResourcePaths = listResourcePaths
-                .Where((tmpPath) => IsWithinPath(tmpPath, baseDirectoryPath))
-                .ToList();
-
-            // Make map relative version of extracted and resource file paths (compared to basepath) with original filepath
-            var mapExtractedPathAbsToRel = new Dictionary<string, string>();
-            foreach (var tmpPath in listExtractedPaths)
+            else
             {
-                mapExtractedPathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
+                outZipContentBase64 = null;
+                outTemplatePathWithinZip = null;
             }
-
-            var mapResourcePathAbsToRel = new Dictionary<string, string>();
-            foreach (var tmpPath in listResourcePaths)
-            {
-                mapResourcePathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
-            }
-
-            var templateFilePathWithinZipRel = GetRelativePathFrom(templateFilePath, baseDirectoryPath);
-
-            // Create zip temp folder
-            var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-            var tempZipFilePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-
-            // Foreach extracted, resource, template file, create reqd. directory within zip folder and copy them
-            foreach (KeyValuePair<string, string> entry in mapExtractedPathAbsToRel)
-            {
-                var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
-                var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                Directory.CreateDirectory(directoryWithinZipAbs);
-                File.Copy(entry.Key, filePathWithinZipAbs);
-            }
-            foreach (KeyValuePair<string, string> entry in mapResourcePathAbsToRel)
-            {
-                var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
-                var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                Directory.CreateDirectory(directoryWithinZipAbs);
-                File.Copy(entry.Key, filePathWithinZipAbs);
-            }
-            
-            {
-                var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, templateFilePathWithinZipRel);
-                var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                Directory.CreateDirectory(directoryWithinZipAbs);
-                File.Copy(templateFilePath, filePathWithinZipAbs);
-            }
-
-            CreateZipFromDirectory(tempZipDirectoryPath, tempZipFilePath);
-
-            // Set this zip content to _templateZipBase64Content
-            outZipContentBase64 = ReadFileContent(tempZipFilePath, encodeBase64:true);
-            outTemplatePathWithinZip = templateFilePathWithinZipRel;
         }
 
 

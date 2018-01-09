@@ -4,11 +4,37 @@ using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 using NDepend.Path;
+using Newtonsoft.Json.Serialization;
+using System.Collections.Generic;
 
 namespace FusionCharts.FusionExport.Utils
 {
     public static class Utils
     {
+        public static List<T> EmptyListIfNull<T>(IEnumerable<T> input)
+        {
+            if (input != null)
+            {
+                return input.ToList();
+            }
+            else
+            {
+                return new List<T>();
+            }
+        }
+
+        public static string GetTempFolderName()
+        {
+            var folderName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
+            return Path.GetFullPath(Path.Combine(Path.GetTempPath(), folderName));
+        }
+
+        public static string GetTempFileName()
+        {
+            var fileName = Path.GetTempFileName();
+            return Path.GetFullPath(Path.Combine(Path.GetTempPath(), fileName));
+        }
+
         public static string GetCommonAncestorDirectory(string[] s)
         {
             // Will be a directory name without trailing slash
@@ -120,7 +146,8 @@ namespace FusionCharts.FusionExport.Utils
                         (ex is PathTooLongException) ||
                         (ex is DirectoryNotFoundException) ||
                         (ex is IOException) ||
-                        (ex is FileNotFoundException)
+                        (ex is FileNotFoundException) ||
+                        (ex is ArgumentException)
                         )
                     {
                         return potentiallyFilePath;
@@ -137,14 +164,35 @@ namespace FusionCharts.FusionExport.Utils
             }
 
         }
+
+        public static bool CopyFile(string sourceFilePath, string destFilePath)
+        {
+            if (!File.Exists(destFilePath))
+            {
+                File.Copy(sourceFilePath, destFilePath);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static void CreateZipFromDirectory(string sourceFolderPath, string destinationZipFolder)
         {
             using (ZipFile zip = new ZipFile())
             {
-                string[] files = Directory.GetFiles(sourceFolderPath);
-                zip.AddFiles(files, ".");
+                zip.AddDirectory(sourceFolderPath);
                 zip.Save(destinationZipFolder);
             }
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
+            TKey key,
+            TValue defaultValue)
+        {
+            TValue value;
+            return dictionary.TryGetValue(key, out value) ? value : defaultValue;
         }
     }
 }
