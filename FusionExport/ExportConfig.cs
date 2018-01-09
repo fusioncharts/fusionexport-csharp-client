@@ -45,12 +45,6 @@ namespace FusionCharts.FusionExport.Client
         }
         public class MetadataSchema : Dictionary<string, MetadataElementSchema>
         {
-            [JsonConstructor]
-            public MetadataSchema() : base(StringComparer.OrdinalIgnoreCase)
-            {
-
-            }
-
             public static MetadataSchema CreateFromMetaDataJSON()
             {
                 var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resources.metadataContent);
@@ -201,8 +195,6 @@ namespace FusionCharts.FusionExport.Client
 
         public void Set(string configName, object configValue)
         {
-            configName = configName.ToLower();
-
             if (enableTypeCheckAndConversion)
             {
                 configValue = this.metadata.TryConvertType(configName, configValue);
@@ -214,7 +206,6 @@ namespace FusionCharts.FusionExport.Client
 
         public object Get(string configName)
         {
-            configName = configName.ToLower();
             return configs[configName];
         }
 
@@ -225,15 +216,11 @@ namespace FusionCharts.FusionExport.Client
 
         public bool Remove(string configName)
         {
-            configName = configName.ToLower();
-
             return this.configs.Remove(configName);
         }
 
         public bool Has(string configName)
         {
-            configName = configName.ToLower();
-
             return this.configs.ContainsKey(configName);
         }
 

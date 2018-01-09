@@ -33,7 +33,7 @@ namespace FusionExportExecutable
 
             if(error != null)
             {
-                Console.WriteLine("ERROR: " + error);
+                Console.WriteLine("ERROR: " + error.Message);
             } else
             {
                 Console.WriteLine("DONE: " + result);

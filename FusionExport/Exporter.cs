@@ -3,7 +3,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using System.Threading;
-using WebSocketSharp;
+using WebSocket4Net;
+using System.Threading.Tasks;
 
 namespace FusionCharts.FusionExport.Client
 {
@@ -16,6 +17,7 @@ namespace FusionCharts.FusionExport.Client
         private int exportServerPort = Constants.DEFAULT_PORT;
         private WebSocket wsClient;
         private Thread wsConnectionThread;
+        private TaskCompletionSource<string> taskCompletion;
 
         public Exporter(ExportConfig exportConfig)
         {
@@ -78,17 +80,17 @@ namespace FusionCharts.FusionExport.Client
             this.wsConnectionThread.Start();
         }
 
-        public void Cancel(CloseStatusCode statusCode = CloseStatusCode.Abnormal)
+        public void Cancel()
         {
-            this.Close(statusCode);
+            this.Close("Connection forcibly cancelled");
         }
-        public void Close(CloseStatusCode statusCode = CloseStatusCode.Normal)
+        public void Close(string reasonText = "Connection closed")
         {
             try
             {
                 if (this.wsClient != null)
                 {
-                    this.wsClient.Close(statusCode);
+                    this.wsClient.Close(reason:reasonText);
                 }
             }
             catch (Exception) { }
@@ -106,44 +108,45 @@ namespace FusionCharts.FusionExport.Client
                     this.ExportServerHost,
                     this.ExportServerPort.ToString()
                 });
+
+            // Create TaskCompletionSource
+            this.taskCompletion = new TaskCompletionSource<string>();
+
             // Create new WebSocket with this path
             this.wsClient = new WebSocket(fullWSPath);
 
             // Set incoming data handler before connecting
-            this.wsClient.OnMessage += (sender, e) =>
+            this.wsClient.MessageReceived += (sender, e) =>
             {
-                string dataReceived;
-
-                if (e.IsText)
-                {
-                    dataReceived = e.Data;
-                }
-                else
-                {
-                    dataReceived = Encoding.UTF8.GetString(e.RawData);
-                }
-
+                string dataReceived = e.Message;
                 dataReceived = this.ProcessDataReceived(dataReceived);
             };
 
             // Set error handler
-            this.wsClient.OnError += (sender, e) =>
+            this.wsClient.Error += (sender, e) =>
             {
-                this.OnExportDone(null, new ExportException(e.Message));
+                this.OnExportDone(null, new ExportException(e.Exception.Message));
+                taskCompletion.TrySetException(e.Exception);
+            };
+
+            // Set sending data onopened
+            this.wsClient.Opened += (sender, e) =>
+            {
+                // Send data as buffer
+                string writeString = this.GetFormattedExportConfigs();
+                wsClient.Send(writeString);
             };
 
             // Connect to the websocket. Incoming data and error handlers should already be set.
-            this.wsClient.Connect();
+            this.wsClient.Open();
 
-            // Send data as buffer
-            byte[] writeBuffer = Encoding.UTF8.GetBytes(this.GetFormattedExportConfigs());
-            wsClient.Send(writeBuffer);
+            this.taskCompletion.Task.Wait();
         }
 
         private string ProcessDataReceived(string data)
         {
             string[] parts = data.Split(new string[] { Constants.UNIQUE_BORDER }, StringSplitOptions.None);
-            for (int i = 0; i < parts.Length - 1; i++)
+            for (int i = 0; i < parts.Length; i++)
             {
                 string part = parts[i];
                 if (part.StartsWith(Constants.EXPORT_EVENT))
@@ -172,6 +175,7 @@ namespace FusionCharts.FusionExport.Client
         {
             string exportResult = data.Remove(0, Constants.EXPORT_DATA.Length);
             this.OnExportDone(exportResult, null);
+            this.taskCompletion.TrySetResult(exportResult);
         }
 
         private string CheckExportError(string state)
