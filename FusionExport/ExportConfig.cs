@@ -15,12 +15,12 @@ namespace FusionCharts.FusionExport.Client
     {
         const string CHARTCONFIG = "chartConfig";
         const string INPUTSVG = "inputSVG";
-        const string CALLBACKS = "callbacks";
+        const string CALLBACKS = "callbackFilePath";
         const string DASHBOARDLOGO = "dashboardlogo";
         const string OUTPUTFILEDEFINITION = "outputFileDefinition";
         const string CLIENTNAME = "clientName";
-        const string TEMPLATE = "template";
-        const string RESOURCES = "resources";
+        const string TEMPLATE = "templateFilePath";
+        const string RESOURCES = "resourceFilePath";
 
         public class MetadataElementSchema
         {
@@ -28,15 +28,15 @@ namespace FusionCharts.FusionExport.Client
             {
                 String,
                 boolean,
-                Number
+                Integer
             };
 
 
             public enum Converter
             {
                 PassThrough,
-                BooleanFromStringNumber,
-                NumberFromString,
+                BooleanConverter,
+                NumberConverter,
             };
 
 
@@ -55,14 +55,14 @@ namespace FusionCharts.FusionExport.Client
             {
                 {MetadataElementSchema.ElementType.String, typeof(string)},
                 {MetadataElementSchema.ElementType.boolean, typeof(bool)},
-                {MetadataElementSchema.ElementType.Number, typeof(int)},
+                {MetadataElementSchema.ElementType.Integer, typeof(int)},
             };
 
             public Dictionary<MetadataElementSchema.Converter, Func<object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object>>()
             {
                 {MetadataElementSchema.Converter.PassThrough, (object configValue) => configValue},
-                {MetadataElementSchema.Converter.BooleanFromStringNumber, (object configValue) => BooleanFromStringNumber(configValue)},
-                {MetadataElementSchema.Converter.NumberFromString, (object configValue) => NumberFromString(configValue)},
+                {MetadataElementSchema.Converter.BooleanConverter, (object configValue) => BooleanFromStringNumber(configValue)},
+                {MetadataElementSchema.Converter.NumberConverter, (object configValue) => NumberFromString(configValue)},
             };
 
             public static bool BooleanFromStringNumber(object configValue)
