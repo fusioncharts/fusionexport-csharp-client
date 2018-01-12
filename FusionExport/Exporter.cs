@@ -190,12 +190,22 @@ namespace FusionCharts.FusionExport.Client
 
         private void OnExportSateChanged(string state)
         {
-            this.exportStateChangedListener?.Invoke(state);
+            var exportEvent = new ExportEvent()
+            {
+                state = StateChangeData.FromStateString(state)
+            };
+
+            this.exportStateChangedListener?.Invoke(exportEvent);
         }
 
         private void OnExportDone(string result, ExportException error)
         {
-            this.exportDoneListener?.Invoke(result, error);
+            var exportEvent = new ExportEvent()
+            {
+                exportedFiles = ExportCompleteData.FromResponseString(result)
+            };
+
+            this.exportDoneListener?.Invoke(exportEvent, error);
             this.Close();
         }
 

@@ -5,8 +5,8 @@ using System.Linq;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public delegate void ExportDoneListener(string result, ExportException error);
-    public delegate void ExportStateChangedListener(string state);
+    public delegate void ExportDoneListener(ExportEvent exportEvent, ExportException error);
+    public delegate void ExportStateChangedListener(ExportEvent exportEvent);
 
     public class ExportManager
     {
@@ -70,24 +70,20 @@ namespace FusionCharts.FusionExport.Client
         }
 
 
-        public static void SaveExportedFiles(string dirPath, string exportedOutput)
+        public static void SaveExportedFiles(string dirPath, ExportCompleteData exportedFiles)
         {
-            var response = JsonConvert.DeserializeObject<ResponseData>(exportedOutput);
-
-            foreach (var responseElement in response.data)
+            foreach (var fileElement in exportedFiles.data)
             {
-                var fullPath = Path.Combine(dirPath, responseElement.realName);
-                var contentBytes = Convert.FromBase64String(responseElement.fileContent);
+                var fullPath = Path.Combine(dirPath, fileElement.realName);
+                var contentBytes = Convert.FromBase64String(fileElement.fileContent);
 
                 File.WriteAllBytes(fullPath, contentBytes);
             }
         }
         
-        public static string[] GetExportedFileNames(string exportedOutput)
+        public static string[] GetExportedFileNames(ExportCompleteData exportedFiles)
         {
-            var response = JsonConvert.DeserializeObject<ResponseData>(exportedOutput);
-
-            return response.data.Select((ele) => ele.realName).ToArray();
+            return exportedFiles.data.Select((ele) => ele.realName).ToArray();
         }
     }
 }
