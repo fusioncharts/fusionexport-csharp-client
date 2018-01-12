@@ -20,7 +20,7 @@ namespace FusionExportExecutable
             //exportConfig.Set("template", templateFile);
             //exportConfig.Set("resources", resourcesFile);
 
-            File.WriteAllText("./a.json",exportConfig.GetFormattedConfigs());
+            File.WriteAllText("./a.json", exportConfig.GetFormattedConfigs());
 
             ExportManager em = new ExportManager();
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
@@ -28,21 +28,25 @@ namespace FusionExportExecutable
             Console.Read();
         }
 
-        static void OnExportDone(string result, ExportException error)
+        static void OnExportDone(ExportEvent exportEvent, ExportException error)
         {
+            var result = exportEvent.exportedFiles;
 
-            if(error != null)
+            if (error != null)
             {
                 Console.WriteLine("ERROR: " + error.Message);
-            } else
+            }
+            else
             {
-                Console.WriteLine("DONE: " + result);
+                ExportManager.SaveExportedFiles(".", result);
+                Console.WriteLine("DONE File Names: " + String.Join(",", ExportManager.GetExportedFileNames(result)));
             }
         }
 
-        static void OnExportStateChanged(string state)
+        static void OnExportStateChanged(ExportEvent exportEvent)
         {
-            Console.WriteLine("STATE: " + state);
+            var state = exportEvent.state;
+            Console.WriteLine("STATE: " + state.customMsg);
         }
     }
 }
