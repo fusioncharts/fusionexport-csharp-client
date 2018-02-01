@@ -309,14 +309,6 @@ namespace FusionCharts.FusionExport.Client
                 selfClone.Set(DASHBOARDLOGO, ReadFileContent(oldValue, encodeBase64: true));
             }
 
-            if (selfClone.Has(DASHBOARDLOGO))
-            {
-                var oldValue = (string)selfClone.Get(DASHBOARDLOGO);
-                selfClone.Remove(DASHBOARDLOGO);
-
-                selfClone.Set(DASHBOARDLOGO, ReadFileContent(oldValue, encodeBase64: true));
-            }
-
             if (selfClone.Has(OUTPUTFILEDEFINITION))
             {
                 var oldValue = (string)selfClone.Get(OUTPUTFILEDEFINITION);
