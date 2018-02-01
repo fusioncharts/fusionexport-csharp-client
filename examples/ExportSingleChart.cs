@@ -1,40 +1,42 @@
 using System;
 using System.IO;
+using System.Linq;
 using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    class Program
+    public static class ExportSingleChart
     {
-        static void Main(string[] args)
+        public static void Run()
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText("fullpath/of/chart-config-file.json"));
-            exportConfig.Set("type", "pdf");
+            exportConfig.Set("chartConfig", File.ReadAllText("./resources/chart-config-file.json"));
 
-             // Instantiate the ExportManager class
+            // Instantiate the ExportManager class
             ExportManager em = new ExportManager();
             // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
-        
+
         // Called when export is done
-        static void OnExportDone(string result, ExportException error)
+        static void OnExportDone(ExportEvent ev, ExportException error)
         {
-            if(error != null)
+            if (error != null)
             {
                 Console.WriteLine("Error: " + error);
-            } else
-            {   
-                Console.WriteLine("Done: " + result); // export result
+            }
+            else
+            {
+                var fileNames = ev.exportedFiles.data.Select((tmp) => tmp.realName);
+                Console.WriteLine("Done: " + fileNames); // export result
             }
         }
-        
+
         // Called on each export state change
-        static void OnExportStateChanged(string state)
+        static void OnExportStateChanged(ExportEvent ev)
         {
-            Console.WriteLine("State: " + state);
+            Console.WriteLine("State: " + ev.state.customMsg);
         }
     }
 }

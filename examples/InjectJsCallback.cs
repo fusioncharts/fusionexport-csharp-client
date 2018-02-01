@@ -5,7 +5,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class Dashboard
+    public static class InjectJsCallback
     {
         public static void Run()
         {
@@ -13,6 +13,7 @@ namespace FusionExportTest
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
             exportConfig.Set("templateFilePath", "./resources/template.html");
+            exportConfig.Set("callbackFilePath", "./resources/callback.js");
 
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager();
