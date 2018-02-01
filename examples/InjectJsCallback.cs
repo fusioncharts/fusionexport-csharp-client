@@ -7,7 +7,7 @@ namespace FusionExportTest
 {
     public static class InjectJsCallback
     {
-        public static void Run()
+        public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
@@ -16,7 +16,7 @@ namespace FusionExportTest
             exportConfig.Set("callbackFilePath", "./resources/callback.js");
 
             // Instantiate the ExportManager class
-            ExportManager em = new ExportManager();
+            ExportManager em = new ExportManager(host: host, port: port);
             // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
@@ -30,8 +30,8 @@ namespace FusionExportTest
             }
             else
             {
-                var fileNames = ev.exportedFiles.data.Select((tmp) => tmp.realName);
-                Console.WriteLine("Done: " + fileNames); // export result
+                var fileNames = ExportManager.GetExportedFileNames(ev.exportedFiles);
+                Console.WriteLine("Done: " + String.Join(", ", fileNames)); // export result
             }
         }
 

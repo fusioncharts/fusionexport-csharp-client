@@ -11,7 +11,8 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            BulkExport.Run();
+            BulkExport.Run(host: "192.168.0.192",port: 1337);
+            Console.ReadKey();
         }
     }
 }
