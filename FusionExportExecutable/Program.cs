@@ -30,7 +30,6 @@ namespace FusionExportExecutable
 
         static void OnExportDone(ExportEvent exportEvent, ExportException error)
         {
-            var result = exportEvent.exportedFiles;
 
             if (error != null)
             {
@@ -38,6 +37,7 @@ namespace FusionExportExecutable
             }
             else
             {
+                var result = exportEvent.exportedFiles;
                 ExportManager.SaveExportedFiles(".", result);
                 Console.WriteLine("DONE File Names: " + String.Join(",", ExportManager.GetExportedFileNames(result)));
             }
