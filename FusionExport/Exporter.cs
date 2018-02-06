@@ -200,12 +200,20 @@ namespace FusionCharts.FusionExport.Client
 
         private void OnExportDone(string result, ExportException error)
         {
-            var exportEvent = new ExportEvent()
+            if (error == null)
             {
-                exportedFiles = ExportCompleteData.FromResponseString(result)
-            };
+                var exportEvent = new ExportEvent()
+                {
+                    exportedFiles = ExportCompleteData.FromResponseString(result)
+                };
 
-            this.exportDoneListener?.Invoke(exportEvent, error);
+                this.exportDoneListener?.Invoke(exportEvent, error);
+            }
+            else
+            {
+                this.exportDoneListener?.Invoke(null, error);
+            }
+            
             this.Close();
         }
 

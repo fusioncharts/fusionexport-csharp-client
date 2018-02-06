@@ -2,7 +2,7 @@
 
 namespace FusionCharts.FusionExport.Client
 {
-    class Constants
+    public static class Constants
     {
         public const string EXPORT_DATA = "EXPORT_DATA:";
         public const string EXPORT_EVENT = "EXPORT_EVENT:";
