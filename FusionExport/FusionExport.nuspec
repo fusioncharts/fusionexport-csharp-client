@@ -2,16 +2,16 @@
 <package>
   <metadata>
     <id>FusionExport</id>
-    <version>1.0.0-beta</version>
+    <version>1.0.0-rc</version>
     <title>C# language SDK for FusionExport system</title>
-    <authors>rousan</authors>
-    <owners>subrata_mal</owners>
+    <authors>FusionCharts</authors>
+    <owners>FusionCharts</owners>
     <licenseUrl>https://raw.githubusercontent.com/fusioncharts/fusionexport-csharp-client/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/fusioncharts/fusionexport-csharp-client</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Language SDK for FusionExport which enables exporting of charts and dashboards through C#.</description>
-    <releaseNotes>First Beta release</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <releaseNotes>Release Candidate(RC) release</releaseNotes>
+    <copyright>Copyright 2018</copyright>
     <tags>FusionCharts FusionExport Charts Export SDK Client</tags>
     <summary>C# language SDK for FusionExport system</summary>
   </metadata>
