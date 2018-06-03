@@ -11,7 +11,7 @@ namespace FusionExportTest
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartCquaonfig", File.ReadAllText("./resources/single.json"));
+            exportConfig.Set("chartConfig", File.ReadAllText("./resources/single.json"));
             exportConfig.Set("quality", "best");
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager(host: host, port: port);

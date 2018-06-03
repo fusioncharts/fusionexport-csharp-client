@@ -11,7 +11,7 @@ namespace FusionExportTest
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartCquaonfig", File.ReadAllText("./resources/template_d3.json"));
+            exportConfig.Set("chartConfig", File.ReadAllText("./resources/template_d3.json"));
             exportConfig.Set("type", "jpg");
             exportConfig.Set("asyncCapture", true);
             // Instantiate the ExportManager class
