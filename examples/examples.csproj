@@ -51,7 +51,6 @@
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />
     <Compile Include="InjectJsCallback.cs" />
-    <Compile Include="LicensedFile.cs" />
     <Compile Include="OutputAsZip.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
