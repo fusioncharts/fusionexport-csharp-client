@@ -47,6 +47,7 @@
     <Compile Include="ChangeType.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
+	<Compile Include="Quality.cs" />
     <Compile Include="Dashboard.cs" />
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />
@@ -93,7 +94,12 @@
     <Content Include="resources\template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="resources\template_d3.html" />
+    <Content Include="resources\template_d3.html">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Include="resources\single.json">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
