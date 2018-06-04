@@ -21,9 +21,6 @@ namespace FusionCharts.FusionExport.Client
         const string CLIENTNAME = "clientName";
         const string TEMPLATE = "templateFilePath";
         const string RESOURCES = "resourceFilePath";
-        const string HREF = "href";
-        const string SRC = "src";
-
 
         public class MetadataElementSchema
         {
@@ -360,21 +357,21 @@ namespace FusionCharts.FusionExport.Client
                 // Find all link, script, img tags with local URL from loaded html
                 var filteredLinkTags = EmptyListIfNull(htmlDoc.DocumentNode
                     .SelectNodes("//link"))
-                    .Where((linkTag) => !linkTag.Attributes.Contains(HREF) || isLocalResource(linkTag.Attributes[HREF].Value));
+                    .Where((linkTag) => linkTag.HasAttributes && linkTag.Attributes["href"] != null && isLocalResource(linkTag.Attributes["href"].Value));
 
                 var filteredScriptTags = EmptyListIfNull(htmlDoc.DocumentNode
-                    .SelectNodes("//script"))
-                    .Where((scriptTag) => !scriptTag.Attributes.Contains(SRC) || isLocalResource(scriptTag.Attributes[SRC].Value));
+                   .SelectNodes("//script"))
+                .Where(scriptTag => scriptTag.HasAttributes && scriptTag.Attributes["src"] != null && isLocalResource(scriptTag.Attributes["src"].Value));
 
                 var filteredImageTags = EmptyListIfNull(htmlDoc.DocumentNode
                     .SelectNodes("//img"))
-                    .Where((imageTag) => !imageTag.Attributes.Contains(SRC) || isLocalResource(imageTag.Attributes[SRC].Value));
+                    .Where((imageTag) => imageTag.HasAttributes && imageTag.Attributes["src"] != null && isLocalResource(imageTag.Attributes["src"].Value));
 
                 // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
                 // which will be used within zip and change the URLs (within html) to this tempfilename.
                 foreach (var linkTag in filteredLinkTags)
                 {
-                    var originalFilePath = linkTag.Attributes[HREF].Value;
+                    var originalFilePath = linkTag.Attributes["href"].Value;
 
                     var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
                     listExtractedPaths.Add(resolvedFilePath);
@@ -382,7 +379,7 @@ namespace FusionCharts.FusionExport.Client
 
                 foreach (var scriptTag in filteredScriptTags)
                 {
-                    var originalFilePath = scriptTag.Attributes[SRC].Value;
+                    var originalFilePath = scriptTag.Attributes["src"].Value;
 
                     var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
                     listExtractedPaths.Add(resolvedFilePath);
@@ -390,7 +387,7 @@ namespace FusionCharts.FusionExport.Client
 
                 foreach (var imageTag in filteredImageTags)
                 {
-                    var originalFilePath = imageTag.Attributes[SRC].Value;
+                    var originalFilePath = imageTag.Attributes["src"].Value;
 
                     var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
                     listExtractedPaths.Add(resolvedFilePath);
