@@ -1,25 +1,25 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class Dashboard
+    public static class D3_Exp
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
-            exportConfig.Set("templateFilePath", "./resources/template.html");
-
+            exportConfig.Set("templateFilePath", "./resources/template_d3.html");
+            exportConfig.Set("type", "jpg");
+            exportConfig.Set("asyncCapture", true);
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager(host: host, port: port);
             // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+            Console.Read();
         }
-
         // Called when export is done
         static void OnExportDone(ExportEvent ev, ExportException error)
         {

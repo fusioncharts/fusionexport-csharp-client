@@ -1,40 +1,43 @@
 using System;
 using System.IO;
+using System.Linq;
 using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    class Program
+    public static class OutputAsZip
     {
-        static void Main(string[] args)
+        public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText("fullpath/of/bulk.json"));
+            exportConfig.Set("chartConfig", File.ReadAllText("./resources/bulk.json"));
             exportConfig.Set("exportAsZip", "true");
 
             // Instantiate the ExportManager class
-            ExportManager em = new ExportManager();
+            ExportManager em = new ExportManager(host: host, port: port);
             // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
-        
+
         // Called when export is done
-        static void OnExportDone(string result, ExportException error)
+        static void OnExportDone(ExportEvent ev, ExportException error)
         {
-            if(error != null)
+            if (error != null)
             {
                 Console.WriteLine("Error: " + error);
-            } else
-            {   
-                Console.WriteLine("Done: " + result); // export result
+            }
+            else
+            {
+                var fileNames = ExportManager.GetExportedFileNames(ev.exportedFiles);
+                Console.WriteLine("Done: " + String.Join(", ", fileNames)); // export result
             }
         }
-        
+
         // Called on each export state change
-        static void OnExportStateChanged(string state)
+        static void OnExportStateChanged(ExportEvent ev)
         {
-            Console.WriteLine("State: " + state);
+            Console.WriteLine("State: " + ev.state.customMsg);
         }
     }
 }

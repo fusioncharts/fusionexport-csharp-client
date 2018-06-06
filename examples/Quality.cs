@@ -1,25 +1,23 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class Dashboard
+    public static class Quality
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
-            exportConfig.Set("templateFilePath", "./resources/template.html");
-
+            exportConfig.Set("chartConfig", File.ReadAllText("./resources/single.json"));
+            exportConfig.Set("quality", "best");
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager(host: host, port: port);
             // Call the Export() method with the export config and the respective callbacks
             em.Export(exportConfig, OnExportDone, OnExportStateChanged);
         }
-
         // Called when export is done
         static void OnExportDone(ExportEvent ev, ExportException error)
         {
