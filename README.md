@@ -4,14 +4,14 @@ Language SDK for FusionExport which enables exporting of charts & dashboards thr
 
 ## Prerequisites
 
-.NET Framework version >= 3.5
+.NET Framework version >= 4.0
 
 ## Installation
 
 You can install the SDK using the `NuGet` package manager. To install, open the NuGet package manager console and run the following command:
 
 ```sh
-$ Install-Package FusionExport -Version 1.0.0
+$ Install-Package FusionExport -Version 1.0.0-rc0
 ```
 
 ## Getting Started

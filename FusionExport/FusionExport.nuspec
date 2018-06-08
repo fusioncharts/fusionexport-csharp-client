@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>FusionExport</id>
-    <version>1.0.0-rc</version>
+    <version>1.0.0-rc0</version>
     <title>C# language SDK for FusionExport system</title>
     <authors>FusionCharts</authors>
     <owners>FusionCharts</owners>
