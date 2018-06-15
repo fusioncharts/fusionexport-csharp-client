@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AmazonS3_Upload.cs" />
     <Compile Include="AsyncCapture.cs" />
     <Compile Include="BulkExport.cs" />
     <Compile Include="ChangeType.cs" />
