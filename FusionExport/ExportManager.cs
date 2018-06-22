@@ -140,67 +140,28 @@ namespace FusionCharts.FusionExport.Client
                 
             }
         }
-        private static void UploadFileToFTPServer(ExportCompleteData exportedFiles,FtpWebRequest request)
+        /// <summary>
+        /// upload exported file to ftp server
+        /// </summary>
+        /// <param name="exportedFiles"></param>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <param name="remoteAddress"></param>
+        public static void UploadFileToFTPServer(ExportCompleteData exportedFiles, string userName, string password,string host,string remoteAddress,int port = 21)
         {
-            request.Method = WebRequestMethods.Ftp.UploadFile;
-            foreach (var fileElement in exportedFiles.data)
+            using (WebClient ftpClient = new WebClient())
             {
-                using (MemoryStream memoryStream = new MemoryStream(Convert.FromBase64String(fileElement.fileContent)))
+                ftpClient.Credentials = new NetworkCredential(userName, password);
+                
+                foreach (var fileElement in exportedFiles.data)
                 {
-                    /* using (FileStream file = new FileStream(fileElement.realName, FileMode.Create, FileAccess.Write))
-                     {
-                         byte[] bytes = new byte[stream.Length];
-                         stream.Read(bytes, 0, (int)stream.Length);
-                         file.Write(bytes, 0, bytes.Length);
-
-                     } */
-                    byte[] fileContents;
-                    using (StreamReader sourceStream = new StreamReader(memoryStream))
-                    {
-                        fileContents = Convert.FromBase64String(sourceStream.ReadToEnd());
-                    }
-
-                    request.ContentLength = fileContents.Length;
-
-                    using (Stream requestStream = request.GetRequestStream())
-                    {
-                        requestStream.Write(fileContents, 0, fileContents.Length);
-                    }
-
-                    using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
-                    {
-                        Console.WriteLine("Upload File Complete, status {0}", response.StatusDescription);
-                    }
+                    byte[] fileContents = Convert.FromBase64String(fileElement.fileContent);
+                    ftpClient.UploadData(string.Concat(host ,":",port, "/",remoteAddress,"/",fileElement.realName), fileContents);
                 }
+
+
             }
             
-
-        }
-        /// <summary>
-        /// if file upload path is local address
-        /// </summary>
-        /// <param name="exportedFiles"></param>
-        /// <param name="userName"></param>
-        /// <param name="password"></param>
-        /// <param name="address"></param>
-        public static void UploadFileToFTPServer(ExportCompleteData exportedFiles, string userName, string password,string address)
-        {
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(address);
-            request.Credentials = new NetworkCredential(userName, password);
-            UploadFileToFTPServer(exportedFiles,request);
-        }
-        /// <summary>
-        /// if file upload path is an URI
-        /// </summary>
-        /// <param name="exportedFiles"></param>
-        /// <param name="userName"></param>
-        /// <param name="password"></param>
-        /// <param name="uri"></param>
-        public static void UploadFileToFTPServer(ExportCompleteData exportedFiles, string userName, string password, Uri uri)
-        {
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(uri);
-            request.Credentials = new NetworkCredential(userName, password);
-            UploadFileToFTPServer(exportedFiles, request);
         }
         public static string[] GetExportedFileNames(ExportCompleteData exportedFiles)
         {
