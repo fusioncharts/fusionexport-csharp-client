@@ -2,35 +2,18 @@
 
 namespace FusionCharts.FusionExport.Client
 {
-    public class FusionExportAmazonS3Exception : Exception
+    public class FusionExportHttpException : Exception
     {
-        
-        public FusionExportAmazonS3Exception()
+
+        public FusionExportHttpException()
             : base()
         { }
 
-        public FusionExportAmazonS3Exception(string message)
+        public FusionExportHttpException(string message)
             : base(message)
         { }
 
-        public FusionExportAmazonS3Exception(string message, Exception innerException)
-            : base(message, innerException)
-        { }
-
-        
-    }
-    public class FusionExportFTPServerException : Exception
-    {
-
-        public FusionExportFTPServerException()
-            : base()
-        { }
-
-        public FusionExportFTPServerException(string message)
-            : base(message)
-        { }
-
-        public FusionExportFTPServerException(string message, Exception innerException)
+        public FusionExportHttpException(string message, Exception innerException)
             : base(message, innerException)
         { }
 

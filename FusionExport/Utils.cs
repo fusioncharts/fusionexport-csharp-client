@@ -23,10 +23,16 @@ namespace FusionCharts.FusionExport.Utils
             }
         }
 
-        public static string GetTempFolderName()
+        public static string GetTempFolderName(bool ensureDirectoryExist = false)
         {
             var folderName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
-            return Path.GetFullPath(Path.Combine(Path.GetTempPath(), folderName));
+            string tempPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), folderName));
+
+            if (ensureDirectoryExist && !Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
+            return tempPath;
         }
 
         public static string GetTempFileName()
@@ -75,6 +81,11 @@ namespace FusionCharts.FusionExport.Utils
                 }
             }
 
+        }
+
+        public static string GetAbsolutePathFrom(string filePath)
+        {
+            return filePath.ToAbsoluteFilePath().FileInfo.FullName;
         }
 
         public static string GetRelativePathFrom(string absoluteFilePath, string baseDirectoryPath)
@@ -187,12 +198,47 @@ namespace FusionCharts.FusionExport.Utils
             }
         }
 
+        public static List<String> ExtractZipInDirectory(string zipFullName, string destinationZipFolder)
+        {
+            List<String> files = new List<string>();
+
+            if (File.Exists(zipFullName))
+            {
+                if (!Directory.Exists(destinationZipFolder))
+                {
+                    Directory.CreateDirectory(destinationZipFolder);
+                }
+
+                using (ZipFile zip = ZipFile.Read(zipFullName))
+                {
+                    zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
+                    zip.ExtractAll(destinationZipFolder);
+
+                    foreach(ZipEntry entry in zip.Entries)
+                    {
+                        if (!entry.IsDirectory)
+                        {
+                            string filePath = Path.Combine(destinationZipFolder, entry.FileName.ToString());
+                            files.Add(Path.Combine(filePath.ToAbsoluteFilePath().FileInfo.FullName));
+                        }
+                    }
+                }
+            }
+
+            return files;
+        }
+
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
             TKey key,
             TValue defaultValue)
         {
             TValue value;
             return dictionary.TryGetValue(key, out value) ? value : defaultValue;
+        }
+
+        public static string GetBaseDirectory()
+        {
+            return AppDomain.CurrentDomain.BaseDirectory;
         }
     }
 }
