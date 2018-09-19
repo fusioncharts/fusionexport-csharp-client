@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using NDepend.Path;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace FusionCharts.FusionExport.Utils
 {
@@ -240,5 +241,36 @@ namespace FusionCharts.FusionExport.Utils
         {
             return AppDomain.CurrentDomain.BaseDirectory;
         }
+
+        public static void DeleteFile(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch { }
+        }
+
+        public static StreamContent CloneStreamContent(StreamContent content)
+        {
+            try
+            {
+                MemoryStream ms = new MemoryStream();
+                using (System.Threading.Tasks.Task task = content.CopyToAsync(ms))
+                {
+                    task.Wait();
+                }
+
+                ms.Seek(0, SeekOrigin.Begin);
+                return new StreamContent(ms);
+            }
+            catch { }
+
+            return content;
+        }
+
     }
 }

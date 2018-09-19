@@ -251,7 +251,16 @@ namespace FusionCharts.FusionExport.Client
 
         public void Clear()
         {
-            this.configs.Clear();
+            if (this.configs != null && this.configs.Count > 0)
+            {
+                if (this.configs.ContainsKey(PAYLOAD))
+                {
+                    string payloadFilePath = this.configs[PAYLOAD].ToString();
+                    Utils.Utils.DeleteFile(payloadFilePath);
+                }
+
+                this.configs.Clear();
+            }
         }
 
         public int Count
@@ -299,7 +308,10 @@ namespace FusionCharts.FusionExport.Client
                 {
                     if (config.Key.Equals(ExportConfig.PAYLOAD))
                     {
-                        formDataContent.Add(new StreamContent(File.Open(config.Value.ToString(), FileMode.Open)), config.Key, "file");
+                        using (StreamContent streamContent = new StreamContent(File.Open(config.Value.ToString(), FileMode.Open)))
+                        {
+                            formDataContent.Add(Utils.Utils.CloneStreamContent(streamContent), config.Key, "file");                            
+                        }
                     }
                     else
                     {

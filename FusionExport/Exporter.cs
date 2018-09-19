@@ -131,7 +131,7 @@ namespace FusionCharts.FusionExport.Client
             }
             catch(Exception ex)
             {
-                throw new FusionExportHttpException(ex.Message);
+                throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
             }
         }       
 

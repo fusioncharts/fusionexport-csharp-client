@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using FusionCharts.FusionExport.Client;
+using System.Collections.Generic;
 
 namespace FusionExportExecutable
 {
@@ -9,44 +10,34 @@ namespace FusionExportExecutable
     {
         static void Main(string[] args)
         {
-            string chartConfigFile = "./static/chart-config.json";
-            string svgFile = "./static/sample.svg";
-            string resourcesFile = "./static/resources.json";
-            string templateFile = "./static/html/template.html";
+            try
+            {
+                List<string> results = new List<string>();
+                string chartConfigFile = "./static/chart-config.json";
+                string svgFile = "./static/sample.svg";
+                string resourcesFile = "./static/resources.json";
+                string templateFile = "./static/html/template.html";
 
-            ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", chartConfigFile);
-            //exportConfig.Set("inputSVG", svgFile);
-            //exportConfig.Set("template", templateFile);
-            //exportConfig.Set("resources", resourcesFile);
+                ExportConfig exportConfig = new ExportConfig();
 
-            File.WriteAllText("./a.json", exportConfig.GetFormattedConfigs());
+                using (ExportManager em = new ExportManager())
+                {
+                    exportConfig.Set("chartConfig", chartConfigFile);
+                    exportConfig.Set("templateFilePath", templateFile);
+                    results.AddRange(em.Export(exportConfig));
+                }
 
-            ExportManager em = new ExportManager();
-            em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+                foreach (string path in results)
+                {
+                    Console.WriteLine(path);
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
             Console.Read();
-        }
-
-        static void OnExportDone(ExportEvent exportEvent, ExportException error)
-        {
-
-            if (error != null)
-            {
-                Console.WriteLine("ERROR: " + error.Message);
-            }
-            else
-            {
-                var result = exportEvent.exportedFiles;
-                ExportManager.SaveExportedFiles(".", result);
-                Console.WriteLine("DONE File Names: " + String.Join(",", ExportManager.GetExportedFileNames(result)));
-            }
-        }
-
-        static void OnExportStateChanged(ExportEvent exportEvent)
-        {
-            var state = exportEvent.state;
-            Console.WriteLine("STATE: " + state.customMsg);
         }
     }
 }
