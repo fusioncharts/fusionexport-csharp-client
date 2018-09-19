@@ -77,7 +77,22 @@ namespace FusionCharts.FusionExport.Client
             get { return port; }
         }
 
-        public List<string> Export(ExportConfig exportConfig, string outputDir = "", bool unzip = true)
+        public List<string> Export(ExportConfig exportConfig)
+        {
+            return ExportChart(exportConfig);
+        }
+
+        public List<string> Export(ExportConfig exportConfig, string outputDir)
+        {
+            return ExportChart(exportConfig, outputDir);
+        }
+
+        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
+        {
+            return ExportChart(exportConfig, outputDir, unzip);
+        }
+
+        private List<string> ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true)
         {
             exporter.ExportConfig = exportConfig;
             string zipPath = exporter.Start();
