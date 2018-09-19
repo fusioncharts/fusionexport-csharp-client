@@ -48,9 +48,8 @@
     <Reference Include="NDepend.Path, Version=1.0.0.0, Culture=neutral, PublicKeyToken=663402f81ccece54, processorArchitecture=MSIL">
       <HintPath>..\packages\NDepend.Path.1.0.0\lib\net35\NDepend.Path.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.4.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SuperSocket.ClientEngine, Version=0.10.0.0, Culture=neutral, PublicKeyToken=ee9af13f57f00acc, processorArchitecture=MSIL">
       <HintPath>..\packages\SuperSocket.ClientEngine.Core.0.10.0\lib\net40-client\SuperSocket.ClientEngine.dll</HintPath>
@@ -115,6 +114,7 @@
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="metadata\fusionexport-meta.json" />
     <None Include="metadata\fusionexport-typings.json" />
     <None Include="packages.config">
