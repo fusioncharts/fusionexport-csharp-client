@@ -119,8 +119,19 @@ namespace FusionCharts.FusionExport.Client
                                             fileStream.Close();
                                         }
                                     }
+                                    else
+                                    {
+                                        throw new Exception("Server Error - " + respMessage.StatusCode);
+                                    }
                                 }
                                 antecedent.Dispose();
+                            }
+                            else
+                            {
+                                if (antecedent.Exception != null)
+                                {
+                                    throw antecedent.Exception;
+                                }
                             }
 
                         }).Wait();
@@ -129,11 +140,24 @@ namespace FusionCharts.FusionExport.Client
 
                 return tempZipFilePath;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
+                if (ex.InnerException != null)
+                {
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
+                    }
+                    else
+                    {
+                        throw new FusionExportHttpException(ex.InnerException.Message, ex.InnerException);
+                    }
+                }
+                else
+                {
+                    throw new FusionExportHttpException(ex.Message, ex);
+                }
             }
-        }       
-
+        }
     }
 }
