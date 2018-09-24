@@ -9,31 +9,20 @@
 				"caption": "Number of visitors last week",
 				"subCaption": "Bakersfield Central vs Los Angeles Topanga"
 			},
-			"categories": [{
-				"category": [{
-						"label": "Mon"
-					},
-					{
-						"label": "Tue"
-					},
-					{
-						"label": "Wed"
-					}
-				]
-			}],
-			"dataset": [{
-				"seriesname": "Los Angeles Topanga",
-				"data": [{
-						"value": "13400"
-					},
-					{
-						"value": "12800"
-					},
-					{
-						"value": "22800"
-					}
-				]
-			}]
+			"data": [
+				{
+					"label": "Mon",
+					"value": "13400"
+				},
+				{
+					"label": "Tue",
+					"value": "12800"
+				},
+				{
+					"label": "Wed",
+					"value": "22800"
+				}
+			]			
 		}
 	},
 	{

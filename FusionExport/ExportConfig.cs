@@ -18,7 +18,7 @@ namespace FusionCharts.FusionExport.Client
         const string CHARTCONFIG = "chartConfig";
         const string INPUTSVG = "inputSVG";
         const string CALLBACKS = "callbackFilePath";
-        const string DASHBOARDLOGO = "dashboardlogo";
+        const string DASHBOARDLOGO = "dashboardLogo";
         const string OUTPUTFILEDEFINITION = "outputFileDefinition";
         const string CLIENTNAME = "clientName";
         const string TEMPLATE = "templateFilePath";
@@ -78,8 +78,7 @@ namespace FusionCharts.FusionExport.Client
                 }
                 else if (configValue.GetType() == typeof(string))
                 {
-                    string value = (string)configValue;
-                    value = value.ToLower();
+                    string value = configValue.ToString().ToLower();
 
                     if ((value == "true") || (value == "1"))
                     {
@@ -125,7 +124,7 @@ namespace FusionCharts.FusionExport.Client
                 }
                 else if (configValue.GetType() == typeof(string))
                 {
-                    string value = (string)configValue;
+                    string value = configValue.ToString();
 
                     return Int32.Parse(value);
                 }
@@ -215,7 +214,7 @@ namespace FusionCharts.FusionExport.Client
             this.enableTypeCheckAndConversion = enableTypeCheckAndConversion;
 
             this.metadata = MetadataSchema.CreateFromMetaDataJSON();
-            this.configs = new Dictionary<string, object>();
+            this.configs = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         public void Set(string configName, object configValue)
@@ -336,7 +335,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(CHARTCONFIG))
             {
-                oldValue = (string)selfClone.Get(CHARTCONFIG);
+                oldValue = selfClone.Get(CHARTCONFIG).ToString();
                 selfClone.Remove(CHARTCONFIG);
                 
                 if (oldValue.EndsWith(".json"))
@@ -349,7 +348,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(INPUTSVG))
             {
-                oldValue = (string)selfClone.Get(INPUTSVG);
+                oldValue = selfClone.Get(INPUTSVG).ToString();
                 selfClone.Remove(INPUTSVG);
 
                 internalFilePath = "inputSVG.svg";
@@ -364,9 +363,9 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(CALLBACKS))
             {
-                oldValue = (string)selfClone.Get(CALLBACKS);
+                oldValue = selfClone.Get(CALLBACKS).ToString();
                 selfClone.Remove(CALLBACKS);
-                
+
                 internalFilePath = "callbackFile.js";
                 zipBag.Add(new ResourcePathInfo()
                 {
@@ -379,7 +378,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(DASHBOARDLOGO))
             {
-                oldValue = (string)selfClone.Get(DASHBOARDLOGO);
+                oldValue = selfClone.Get(DASHBOARDLOGO).ToString();
                 selfClone.Remove(DASHBOARDLOGO);
                 
                 var ext = new FileInfo(oldValue).Extension;
@@ -395,7 +394,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(OUTPUTFILEDEFINITION))
             {
-                oldValue = (string)selfClone.Get(OUTPUTFILEDEFINITION);
+                oldValue = selfClone.Get(OUTPUTFILEDEFINITION).ToString();
                 selfClone.Remove(OUTPUTFILEDEFINITION);
 
                 selfClone.Set(OUTPUTFILEDEFINITION, ReadFileContent(oldValue, encodeBase64: false));
@@ -412,7 +411,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (selfClone.Has(ASYNCCAPTURE))
             {
-                oldValue = (string)selfClone.Get(ASYNCCAPTURE);
+                oldValue = selfClone.Get(ASYNCCAPTURE).ToString();
                 selfClone.Remove(ASYNCCAPTURE);
 
                 if (!string.IsNullOrEmpty(oldValue))
@@ -440,7 +439,7 @@ namespace FusionCharts.FusionExport.Client
             List<string> listResourcePaths;
             string baseDirectoryPath;
             this.resolveResourceGlobFiles(out baseDirectoryPath, out listResourcePaths);
-            string templateFilePath = (string)this.Get(TEMPLATE);
+            string templateFilePath = this.Get(TEMPLATE).ToString();
             templateFilePath = Path.GetFullPath(templateFilePath);
 
             if (baseDirectoryPath == null || string.IsNullOrEmpty(baseDirectoryPath))
@@ -500,7 +499,7 @@ namespace FusionCharts.FusionExport.Client
 
         private List<string> findResources()
         {
-            string templateFilePath = (string)this.Get(TEMPLATE);
+            string templateFilePath = this.Get(TEMPLATE).ToString();
             
             if (!string.IsNullOrEmpty(templateFilePath))
             {
@@ -569,7 +568,7 @@ namespace FusionCharts.FusionExport.Client
                 return;
             }
 
-            string resourceFilePath = (string)this.Get(RESOURCES);
+            string resourceFilePath = this.Get(RESOURCES).ToString();
             resourceFilePath = Path.GetFullPath(resourceFilePath);
 
             string resourceDirectoryPath = Path.GetDirectoryName(resourceFilePath);
@@ -644,7 +643,9 @@ namespace FusionCharts.FusionExport.Client
             {
                 foreach (var file in fileBag)
                 {
-                    zip.AddFile(file.externalPath, Path.GetDirectoryName(file.internalPath));                
+                    string dirPath = file.internalPath.Replace(@"\.\", @"\");
+                    ZipEntry zipEntry  = zip.AddFile(file.externalPath);
+                    zipEntry.FileName = dirPath;
                 }
                 zip.Save(tempZipFilePath);
             }
