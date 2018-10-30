@@ -13,6 +13,7 @@ namespace FusionExportTest
             ExportConfig exportConfig = new ExportConfig();
             exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
             exportConfig.Set("templateFilePath", "./resources/template.html");
+            exportConfig.Set("type", "pdf");
 
             // Instantiate the ExportManager class
             ExportManager em = new ExportManager(host: host, port: port);
