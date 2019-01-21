@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
-using NDepend.Path;
+//using NDepend.Path;
 using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -86,17 +86,20 @@ namespace FusionCharts.FusionExport.Utils
 
         public static string GetAbsolutePathFrom(string filePath)
         {
-            return filePath.ToAbsoluteFilePath().FileInfo.FullName;
+            //return filePath.ToAbsoluteFilePath().FileInfo.FullName;
+            return Path.GetFullPath((new Uri(filePath)).LocalPath);
         }
 
         public static string GetRelativePathFrom(string absoluteFilePath, string baseDirectoryPath)
         {
-            var absoluteNDependFilePath = absoluteFilePath.ToAbsoluteFilePath();
-            var baseNDependDirectoryPath = baseDirectoryPath.ToAbsoluteDirectoryPath();
+            //var absoluteNDependFilePath = absoluteFilePath.ToAbsoluteFilePath();
+            //var baseNDependDirectoryPath = baseDirectoryPath.ToAbsoluteDirectoryPath();
 
-            var relativeNDependFilePath = absoluteNDependFilePath.GetRelativePathFrom(baseNDependDirectoryPath);
+            //var relativeNDependFilePath = absoluteNDependFilePath.GetRelativePathFrom(baseNDependDirectoryPath);
+            //return relativeNDependFilePath.ToString();
 
-            return relativeNDependFilePath.ToString();
+            string relativePath = absoluteFilePath.Replace(baseDirectoryPath, ".");
+            return relativePath;
         }
 
         public static bool IsWithinPath(string checkeePath, string parentDirectoryPath)
@@ -116,7 +119,16 @@ namespace FusionCharts.FusionExport.Utils
             }
             else
             {
-                return Path.Combine(basePath, extraPath);
+                string path = Path.Combine(basePath, extraPath);
+                if (path.Equals(extraPath))
+                {
+                    path = Path.GetFullPath(extraPath);
+                }
+                else if (path.Contains("..") || path.Contains("."))
+                {
+                    path = Path.GetFullPath(path);
+                }
+                return path;
             }
         }
 
@@ -220,7 +232,8 @@ namespace FusionCharts.FusionExport.Utils
                         if (!entry.IsDirectory)
                         {
                             string filePath = Path.Combine(destinationZipFolder, entry.FileName.ToString());
-                            files.Add(Path.Combine(filePath.ToAbsoluteFilePath().FileInfo.FullName));
+                            //files.Add(Path.Combine(filePath.ToAbsoluteFilePath().FileInfo.FullName));
+                            files.Add(Path.GetFullPath((new Uri(filePath)).LocalPath));
                         }
                     }
                 }
