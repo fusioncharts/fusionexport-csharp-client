@@ -90,7 +90,7 @@ namespace FusionCharts.FusionExport.Client
 
         private string HandleHttpConnection()
         {
-            //try
+            try
             {
                 string tempZipFilePath = string.Empty;
 
@@ -140,24 +140,24 @@ namespace FusionCharts.FusionExport.Client
 
                 return tempZipFilePath;
             }
-            //catch (Exception ex)
-            //{
-            //    if (ex.InnerException != null)
-            //    {
-            //        if (ex.InnerException.InnerException != null)
-            //        {
-            //            throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
-            //        }
-            //        else
-            //        {
-            //            throw new FusionExportHttpException(ex.InnerException.Message, ex.InnerException);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        throw new FusionExportHttpException(ex.Message, ex);
-            //    }
-            //}
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
+                    }
+                    else
+                    {
+                        throw new FusionExportHttpException(ex.InnerException.Message, ex.InnerException);
+                    }
+                }
+                else
+                {
+                    throw new FusionExportHttpException(ex.Message, ex);
+                }
+            }
         }
     }
 }
