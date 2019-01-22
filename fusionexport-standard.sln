@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.106
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FusionExport", "fusionexport\FusionExport.csproj", "{30506AD0-1589-4E37-9C1A-751D3A1238CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FusionExportTest", "Examples\FusionExportTest.csproj", "{7C93110A-4A9C-4136-BB0E-6103471A779E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{30506AD0-1589-4E37-9C1A-751D3A1238CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30506AD0-1589-4E37-9C1A-751D3A1238CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30506AD0-1589-4E37-9C1A-751D3A1238CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30506AD0-1589-4E37-9C1A-751D3A1238CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C93110A-4A9C-4136-BB0E-6103471A779E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C93110A-4A9C-4136-BB0E-6103471A779E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C93110A-4A9C-4136-BB0E-6103471A779E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C93110A-4A9C-4136-BB0E-6103471A779E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6145B6AB-A8D0-4C20-81F3-37A2DD2E8495}
+	EndGlobalSection
+EndGlobal
