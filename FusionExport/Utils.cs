@@ -166,6 +166,7 @@ namespace FusionCharts.FusionExport.Utils
                 }
                 catch (Exception ex)
                 {
+                    /*
                     if (
                         (ex is PathTooLongException) ||
                         (ex is DirectoryNotFoundException) ||
@@ -180,6 +181,8 @@ namespace FusionCharts.FusionExport.Utils
                     {
                         throw ex;
                     }
+                    */
+                    throw ex;
                 }
             }
             else
