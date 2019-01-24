@@ -77,6 +77,19 @@ namespace FusionCharts.FusionExport.Client
             get { return port; }
         }
 
+        public List<string> ConvertResultToBase64String(List<string> ExportedFiles)
+        {
+            if (ExportedFiles == null || ExportedFiles.Count == 0) throw new Exception("List of exported files is empty.");
+            //List<string> ExportedFiles = ExportChart(exportConfig, Path.GetTempPath(), true);
+            List<string> Base64Data = new List<string>();
+
+            foreach (string file in ExportedFiles)
+            {
+                Base64Data.Add(Utils.Utils.ReadFileContent(file, true));
+            }
+            return Base64Data;
+        }
+
         public List<string> Export(ExportConfig exportConfig)
         {
             return ExportChart(exportConfig);

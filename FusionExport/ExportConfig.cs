@@ -26,6 +26,7 @@ namespace FusionCharts.FusionExport.Client
         const string PLATFORM = "platform";      
         const string ASYNCCAPTURE = "asyncCapture";
         const string PAYLOAD = "payload";
+        const string TEMPLATEURL = "templateURL";
 
         public class MetadataElementSchema
         {
@@ -52,7 +53,15 @@ namespace FusionCharts.FusionExport.Client
         {
             public static MetadataSchema CreateFromMetaDataJSON()
             {
-                var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resources.metadataContent);
+                var assembly = typeof(FusionExport.Client.Exporter).Assembly;
+                byte[] bytes = null;
+                using (Stream resource = assembly.GetManifestResourceStream("FusionExport.Resources.fusionexport-typings.json"))
+                {
+                    bytes = new byte[resource.Length];
+                    resource.Read(bytes, 0, (int)resource.Length);
+                }
+
+                var jsonContent = System.Text.Encoding.UTF8.GetString(bytes);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
@@ -336,11 +345,20 @@ namespace FusionCharts.FusionExport.Client
             if (selfClone.Has(CHARTCONFIG))
             {
                 oldValue = selfClone.Get(CHARTCONFIG).ToString();
+                string trimmedValue = oldValue.Replace("\n", "").Replace("\t", "").Replace("\r", "");
                 selfClone.Remove(CHARTCONFIG);
-                
-                if (oldValue.EndsWith(".json"))
+
+                if (oldValue.ToLower().EndsWith(".json"))
                 {
                     oldValue = ReadFileContent(oldValue, encodeBase64: false);
+                }
+                else if (((trimmedValue.StartsWith("{") && trimmedValue.EndsWith("}")) || (trimmedValue.StartsWith("[") && trimmedValue.EndsWith("]"))))
+                {
+
+                }
+                else
+                {
+                    throw new Exception("Invalid Data Type: Data should be in either serialized JSON, file path of JSON file.");
                 }
 
                 selfClone.Set(CHARTCONFIG, oldValue);
@@ -435,11 +453,23 @@ namespace FusionCharts.FusionExport.Client
 
         private void createTemplateZipPaths(out List<ResourcePathInfo> outZipPaths, out string outTemplatePathWithinZip)
         {
+            string templateFilePath = this.Get(TEMPLATE).ToString();
+
+            // The template is a HTML body not file
+            if (templateFilePath.StartsWith("<"))
+            {
+                string tempTemplate = GetTempFileName();
+                File.WriteAllText(tempTemplate, templateFilePath);
+                templateFilePath = tempTemplate;
+                this.Set(TEMPLATE, templateFilePath);
+            }
+
             List<string> listExtractedPaths = findResources();
             List<string> listResourcePaths;
             string baseDirectoryPath;
             this.resolveResourceGlobFiles(out baseDirectoryPath, out listResourcePaths);
-            string templateFilePath = this.Get(TEMPLATE).ToString();
+
+
             templateFilePath = Path.GetFullPath(templateFilePath);
 
             if (baseDirectoryPath == null || string.IsNullOrEmpty(baseDirectoryPath))

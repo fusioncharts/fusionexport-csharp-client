@@ -4,7 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 //using NDepend.Path;
-using Newtonsoft.Json.Serialization;
+//using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Net.Http;
 
@@ -166,6 +166,7 @@ namespace FusionCharts.FusionExport.Utils
                 }
                 catch (Exception ex)
                 {
+                    /*
                     if (
                         (ex is PathTooLongException) ||
                         (ex is DirectoryNotFoundException) ||
@@ -180,6 +181,8 @@ namespace FusionCharts.FusionExport.Utils
                     {
                         throw ex;
                     }
+                    */
+                    throw ex;
                 }
             }
             else
