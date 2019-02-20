@@ -13,7 +13,7 @@ using static FusionCharts.FusionExport.Utils.Utils;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public class ExportConfig:IDisposable
+    public class ExportConfig : IDisposable
     {
         const string CHARTCONFIG = "chartConfig";
         const string INPUTSVG = "inputSVG";
@@ -22,37 +22,80 @@ namespace FusionCharts.FusionExport.Client
         const string OUTPUTFILEDEFINITION = "outputFileDefinition";
         const string CLIENTNAME = "clientName";
         const string TEMPLATE = "templateFilePath";
-        const string RESOURCES = "resourceFilePath";        
-        const string PLATFORM = "platform";      
+        const string RESOURCES = "resourceFilePath";
+        const string PLATFORM = "platform";
         const string ASYNCCAPTURE = "asyncCapture";
         const string PAYLOAD = "payload";
         const string TEMPLATEURL = "templateURL";
-
         public class MetadataElementSchema
         {
             public enum ElementType
             {
                 String,
                 boolean,
-                Integer
+                Integer,
+                Enum
             };
-
-
+            /*
+            public enum SupportedTypes
+            {
+                String,
+                Object,
+                File,
+                Integer,
+                Enum,
+                Boolean
+            };
+            */
             public enum Converter
             {
                 PassThrough,
                 BooleanConverter,
                 NumberConverter,
+                ChartConfigConverter,
+                EnumConverter
             };
-
-
+            /*
+            public enum Dataset
+            {
+                Letter,
+                Legal,
+                Tabloid,
+                Ledger,
+                A0,
+                A1,
+                A2,
+                A3,
+                A4,
+                A5,
+                jpeg,
+                jpg,
+                png,
+                pdf,
+                svg,
+                html,
+                csv,
+                xls,
+                xlsx,
+                good,
+                better,
+                best
+            };
+            */
             public ElementType type;
             public Converter converter;
+            public string[] supportedTypes; //SupportedTypes 
+            public string[] dataset;
+            //public Dataset dataset;
         }
         public class MetadataSchema : Dictionary<string, MetadataElementSchema>
         {
+            private string[] templateFormat = new string[] { "letter", "legal", "tabloid", "ledger", "a0", "a1", "a2", "a3", "a4", "a5" };
+
             public static MetadataSchema CreateFromMetaDataJSON()
             {
+                /*
+                // The below codes are not working, hence came up with another approach, which is to directly accessing the Resource property
                 var assembly = typeof(FusionExport.Client.Exporter).Assembly;
                 byte[] bytes = null;
                 using (Stream resource = assembly.GetManifestResourceStream("FusionExport.Resources.fusionexport-typings.json"))
@@ -60,8 +103,10 @@ namespace FusionCharts.FusionExport.Client
                     bytes = new byte[resource.Length];
                     resource.Read(bytes, 0, (int)resource.Length);
                 }
-
                 var jsonContent = System.Text.Encoding.UTF8.GetString(bytes);
+                */
+
+                var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resource.fusionexport_typings);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
@@ -72,14 +117,36 @@ namespace FusionCharts.FusionExport.Client
                 {MetadataElementSchema.ElementType.Integer, typeof(int)},
             };
 
-            public Dictionary<MetadataElementSchema.Converter, Func<object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object>>()
+            public Dictionary<MetadataElementSchema.Converter, Func<object, object, object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object, object, object>>()
             {
-                {MetadataElementSchema.Converter.PassThrough, (object configValue) => configValue},
-                {MetadataElementSchema.Converter.BooleanConverter, (object configValue) => BooleanFromStringNumber(configValue)},
-                {MetadataElementSchema.Converter.NumberConverter, (object configValue) => NumberFromString(configValue)},
+                {MetadataElementSchema.Converter.PassThrough, (object configValue,object configName, object metadata) => configValue},
+                {MetadataElementSchema.Converter.BooleanConverter, (object configValue, object configName, object metadata) => BooleanFromStringNumber(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.NumberConverter, (object configValue, object configName, object metadata) => NumberFromString(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.ChartConfigConverter, (object configValue, object configName, object metadata) => ChartConfigConverter(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.EnumConverter, (object configValue, object configName, object metadata) => EnumConverter(configValue,configName, metadata)},
             };
 
-            public static bool BooleanFromStringNumber(object configValue)
+            private static object EnumConverter(object configValue, object configName, object metadata)
+            {
+                if (configValue.GetType() != typeof(string))
+                {
+                    string errMsg = string.Format("Invalid Data Type in parameter '{0}'\nData should be a string.", configName.ToString());
+                    throw new Exception(errMsg);
+                }
+
+                MetadataElementSchema metadataElement = (MetadataElementSchema)metadata;
+
+                if (!metadataElement.dataset.Any(i => i.ToLower().Equals(configValue.ToString().ToLower())))
+                {
+                    string supportParams = string.Join(", ", metadataElement.dataset);
+                    string errMsg = string.Format("Invalid argument value in parameter '{0}'\nSupported parameters are: {1}", configName.ToString(), supportParams);
+                    throw new Exception(errMsg);
+                }
+
+                return configValue;
+            }
+
+            public static bool BooleanFromStringNumber(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() == typeof(bool))
                 {
@@ -125,7 +192,7 @@ namespace FusionCharts.FusionExport.Client
                 }
             }
 
-            public static int NumberFromString(object configValue)
+            public static int NumberFromString(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() == typeof(int))
                 {
@@ -143,8 +210,38 @@ namespace FusionCharts.FusionExport.Client
                 }
             }
 
-            public void CheckType(string configName, object configValue)
+            public static string ChartConfigConverter(object configValue, object configName, object metadata)
             {
+                if (configValue.GetType() != typeof(string) )
+                {
+                    string errMsg = string.Format("Invalid Data Type in parameter '{0}'\nPlease provide either serialized JSON string or JSON file.", configName.ToString());
+                    throw new Exception(errMsg);
+                }
+
+                string valueStr = configValue.ToString().ToLower();
+
+                if (valueStr.EndsWith(".json"))
+                {
+                    if (!File.Exists(valueStr))
+                    {
+                        throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: chartConfig ---> chartConfig [URL] not found. Please provide an appropriate path."));
+                    }
+                    
+                    // Read the file content and convert to string
+                    valueStr = File.ReadAllText(valueStr);
+                }
+                if (!IsValidJson(valueStr))
+                {
+                    throw new InvalidDataException("Invalid ChartConfig JSON", new Exception("JSON structure is invalid. Please check your JSON data."));
+                }
+
+                return valueStr;
+            }
+
+            public void CheckType(Dictionary<string, object> configs, string configName, object configValue)
+            {
+                string errMsg = string.Empty;
+
                 if (this.ContainsKey(configName))
                 {
                     var metadataElement = this[configName];
@@ -153,8 +250,86 @@ namespace FusionCharts.FusionExport.Client
 
                     if (configValue.GetType() != expectedType)
                     {
-                        throw new ArgumentException();
+                        string errTitle = "Invalid Data Type";
+
+                        switch (configName.ToLower())
+                        {
+                            case "templatefilepath":
+                                errMsg = "Data should be in file path of template file";
+                                break;
+                            case "template":
+                                errMsg = "Data should be a HTML template string";
+                                break;
+                            case "templateurl":
+                                errMsg = "Data should be a string";
+                                break;
+                            case "templatewidth":
+                            case "templateheight":
+                                errMsg = "Data should be a string or number";
+                                break;
+                            case "templateformat":
+                                errMsg = "Please follow the documentation to learn more.";
+                                break;
+                        }
+
+                        errMsg = string.Format("Invalid Data Type in parameter '{0}'\n{1}", configName, errMsg);
+                        throw new Exception(errMsg);
                     }
+
+                    string valueStr = configValue.ToString().ToLower();
+
+                    switch (configName.ToLower())
+                    {
+                        case "template":
+                            if (!valueStr.StartsWith("<") || !valueStr.EndsWith("</html>"))
+                            {
+                                errMsg = string.Format("Invalid HTML in parameter '{0}'\nData should be a valid HTML template string.", configName);
+                                throw new Exception(errMsg);
+                            }
+                            break;
+                        case "templatefilepath":
+                            if (!File.Exists(valueStr))
+                            {
+                                throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: templateFilePath ---> The HTML file which you have provided does not exist. Please provide a valid file."));
+                            }
+                            break;
+                        case "templateurl":
+                            try
+                            {
+                                new Uri(valueStr);
+                            }
+                            catch
+                            {
+                                errMsg = string.Format("Invalid URL in parameter '{0}'\nData should be a valid URL", configName);
+                                throw new Exception(errMsg);
+                            }
+                            break;
+                        case "templatewidth":
+                        case "templateheight":
+                            if (configValue.GetType() == typeof(string))
+                            {
+                                try
+                                {
+                                    int.Parse(valueStr);
+                                }
+                                catch
+                                {
+                                    errMsg = string.Format("Parse Failure in parameter '{0}'\nData should be a parsable number", configName);
+                                    throw new Exception(errMsg);
+                                }
+                            }
+                            break;
+                        case "templateformat":
+                            if (!templateFormat.Contains(valueStr))
+                            {
+                                errMsg = string.Format("Invalid Format in parameter '{0}'\nInvalid format provided. Please follow the documentation to learn more", configName);
+                                throw new Exception(errMsg);
+                            }
+
+                            break;
+                    }
+
+                    configs[configName] = configValue;
                 }
                 else
                 {
@@ -171,7 +346,7 @@ namespace FusionCharts.FusionExport.Client
                     object convertedValue;
                     if (ConverterMap.ContainsKey(metadataElement.converter))
                     {
-                        convertedValue = ConverterMap[metadataElement.converter](configValue);
+                        convertedValue = ConverterMap[metadataElement.converter](configValue, configName, metadataElement);
                     }
                     else
                     {
@@ -181,6 +356,28 @@ namespace FusionCharts.FusionExport.Client
                     return convertedValue;
                 }
                 throw new ArgumentException();
+            }
+        }
+
+        private static bool IsValidJson(string jsonString)
+        {
+            jsonString = jsonString.Trim();
+            if ((jsonString.StartsWith("{") && jsonString.EndsWith("}")) || //For object
+                (jsonString.StartsWith("[") && jsonString.EndsWith("]"))) //For array
+            {
+                try
+                {
+                    var obj = Newtonsoft.Json.Linq.JToken.Parse(jsonString);
+                    return true;
+                }
+                catch 
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -218,9 +415,10 @@ namespace FusionCharts.FusionExport.Client
             }
         }
 
-        public ExportConfig(bool enableTypeCheckAndConversion = true)
+        //public ExportConfig(bool enableTypeCheckAndConversion = true)
+        public ExportConfig()
         {
-            this.enableTypeCheckAndConversion = enableTypeCheckAndConversion;
+            this.enableTypeCheckAndConversion = true;
 
             this.metadata = MetadataSchema.CreateFromMetaDataJSON();
             this.configs = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
@@ -231,10 +429,12 @@ namespace FusionCharts.FusionExport.Client
             if (enableTypeCheckAndConversion)
             {
                 configValue = this.metadata.TryConvertType(configName, configValue);
-                this.metadata.CheckType(configName, configValue);
+                this.metadata.CheckType(configs, configName, configValue);
             }
-
-            configs[configName] = configValue;
+            else
+            {
+                configs[configName] = configValue;
+            }
         }
 
         public object Get(string configName)
@@ -341,7 +541,8 @@ namespace FusionCharts.FusionExport.Client
 
             selfClone.Set(CLIENTNAME, "C#");
             selfClone.Set(PLATFORM, Environment.OSVersion.Platform.ToString());
-
+            
+            /*
             if (selfClone.Has(CHARTCONFIG))
             {
                 oldValue = selfClone.Get(CHARTCONFIG).ToString();
@@ -363,6 +564,7 @@ namespace FusionCharts.FusionExport.Client
 
                 selfClone.Set(CHARTCONFIG, oldValue);
             }
+            */
 
             if (selfClone.Has(INPUTSVG))
             {
