@@ -218,9 +218,9 @@ namespace FusionCharts.FusionExport.Client
                     throw new Exception(errMsg);
                 }
 
-                string valueStr = configValue.ToString().ToLower();
+                string valueStr = configValue.ToString();
 
-                if (valueStr.EndsWith(".json"))
+                if (valueStr.ToLower().EndsWith(".json"))
                 {
                     if (!File.Exists(valueStr))
                     {
