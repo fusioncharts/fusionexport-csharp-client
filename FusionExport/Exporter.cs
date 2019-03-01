@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace FusionCharts.FusionExport.Client
 {
@@ -116,7 +118,8 @@ namespace FusionCharts.FusionExport.Client
                                     }
                                     else
                                     {
-                                        throw new Exception("Server Error - " + respMessage.StatusCode);
+                                        Task<string> responseText = respMessage.Content.ReadAsStringAsync();
+                                        throw new FusionExportHttpException("Server Error - " + responseText.Result);
                                     }
                                 }
                                 antecedent.Dispose();
@@ -135,24 +138,25 @@ namespace FusionCharts.FusionExport.Client
 
                 return tempZipFilePath;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                if (ex.InnerException != null)
+                if (exception is AggregateException)
                 {
-                    if (ex.InnerException.InnerException != null)
+                    foreach (var e in ((AggregateException)exception).Flatten().InnerExceptions)
                     {
-                        throw new FusionExportHttpException(ex.InnerException.InnerException.Message, ex.InnerException.InnerException);
-                    }
-                    else
-                    {
-                        throw new FusionExportHttpException(ex.InnerException.Message, ex.InnerException);
+                        if (e is HttpRequestException)
+                        {
+                            throw new FusionExportHttpException(string.Format("Connection Refused:\nUnable to connect to FusionExport server. Make sure that your server is running on {0}:{1}", this.ExportServerHost, this.ExportServerPort));
+                        }
+                        else
+                        {
+                            throw new FusionExportHttpException(exception.InnerException.Message);
+                        }
                     }
                 }
-                else
-                {
-                    throw new FusionExportHttpException(ex.Message, ex);
-                }
+                throw new FusionExportHttpException(exception.Message);
             }
         }
+
     }
 }
