@@ -53,7 +53,8 @@ namespace FusionCharts.FusionExport.Client
                 BooleanConverter,
                 NumberConverter,
                 ChartConfigConverter,
-                EnumConverter
+                EnumConverter,
+                FileConverter
             };
             /*
             public enum Dataset
@@ -90,6 +91,8 @@ namespace FusionCharts.FusionExport.Client
         }
         public class MetadataSchema : Dictionary<string, MetadataElementSchema>
         {
+            private string[] templateFormat = new string[] { "letter", "legal", "tabloid", "ledger", "a0", "a1", "a2", "a3", "a4", "a5" };
+
             public static MetadataSchema CreateFromMetaDataJSON()
             {
                 
@@ -103,8 +106,7 @@ namespace FusionCharts.FusionExport.Client
                 }
                 var jsonContent = System.Text.Encoding.UTF8.GetString(bytes);
                 
-
-                //var jsonContent = System.Text.Encoding.UTF8.GetString(FusionExport.Client.ExportConfig.);
+                //var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resource.fusionexport_typings);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
@@ -122,9 +124,20 @@ namespace FusionCharts.FusionExport.Client
                 {MetadataElementSchema.Converter.NumberConverter, (object configValue, object configName, object metadata) => NumberFromString(configValue,configName, metadata)},
                 {MetadataElementSchema.Converter.ChartConfigConverter, (object configValue, object configName, object metadata) => ChartConfigConverter(configValue,configName, metadata)},
                 {MetadataElementSchema.Converter.EnumConverter, (object configValue, object configName, object metadata) => EnumConverter(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.FileConverter, (object configValue, object configName, object metadata) => FileConverter(configValue,configName, metadata)},
             };
 
-            private static object EnumConverter(object configValue, object configName, object metadata)
+            private static object FileConverter(object configValue, object configName, object metadata)
+            {
+                if (!File.Exists(configValue.ToString()))
+                {
+                    throw new FileNotFoundException(string.Format("Parameter name: {0} ---> [URL/Path] not found. Please provide an appropriate path.", configName));
+                }
+
+                return configValue;
+            }
+
+                private static object EnumConverter(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() != typeof(string))
                 {
@@ -279,7 +292,6 @@ namespace FusionCharts.FusionExport.Client
                     switch (configName.ToLower())
                     {
                         case "template":
-                            valueStr = valueStr.Replace("\n", "").Replace("\r", "");
                             if (!valueStr.StartsWith("<") || !valueStr.EndsWith("</html>"))
                             {
                                 errMsg = string.Format("Invalid HTML in parameter '{0}'\nData should be a valid HTML template string.", configName);
@@ -318,6 +330,29 @@ namespace FusionCharts.FusionExport.Client
                                 }
                             }
                             break;
+                        case "templateformat":
+                            if (!templateFormat.Contains(valueStr))
+                            {
+                                errMsg = string.Format("Invalid Format in parameter '{0}'\nInvalid format provided. Please follow the documentation to learn more", configName);
+                                throw new Exception(errMsg);
+                            }
+
+                            break;
+                    }
+
+                    if (configName.Equals("template"))
+                    {
+                        if (configs.ContainsKey("templateFilePath"))
+                        {
+                            Console.WriteLine("Both 'templateFilePath' and 'template' is provided. 'templateFilePath' will be ignored.");
+                        }
+                    }
+                    else if (configName.Equals("templateFilePath"))
+                    {
+                        if (configs.ContainsKey("template"))
+                        {
+                            Console.WriteLine("Both 'templateFilePath' and 'template' is provided. 'templateFilePath' will be ignored.");
+                        }
                     }
 
                     configs[configName] = configValue;
@@ -527,18 +562,18 @@ namespace FusionCharts.FusionExport.Client
 
             List<ResourcePathInfo> zipBag = new List<ResourcePathInfo>();
 
-            var selfClone = this.Clone();
-            selfClone.enableTypeCheckAndConversion = false;
+            //var this = this.Clone();
+            //this.enableTypeCheckAndConversion = false;
 
-            selfClone.Set(CLIENTNAME, "C#");
-            selfClone.Set(PLATFORM, Environment.OSVersion.Platform.ToString());
+            this.configs[CLIENTNAME] = "C#";
+            this.configs[PLATFORM] = Environment.OSVersion.Platform.ToString();
             
             /*
-            if (selfClone.Has(CHARTCONFIG))
+            if (this.Has(CHARTCONFIG))
             {
-                oldValue = selfClone.Get(CHARTCONFIG).ToString();
+                oldValue = this.Get(CHARTCONFIG).ToString();
                 string trimmedValue = oldValue.Replace("\n", "").Replace("\t", "").Replace("\r", "");
-                selfClone.Remove(CHARTCONFIG);
+                this.Remove(CHARTCONFIG);
 
                 if (oldValue.ToLower().EndsWith(".json"))
                 {
@@ -553,14 +588,14 @@ namespace FusionCharts.FusionExport.Client
                     throw new Exception("Invalid Data Type: Data should be in either serialized JSON, file path of JSON file.");
                 }
 
-                selfClone.Set(CHARTCONFIG, oldValue);
+                this.Set(CHARTCONFIG, oldValue);
             }
             */
 
-            if (selfClone.Has(INPUTSVG))
+            if (this.Has(INPUTSVG))
             {
-                oldValue = selfClone.Get(INPUTSVG).ToString();
-                selfClone.Remove(INPUTSVG);
+                oldValue = this.Get(INPUTSVG).ToString();
+                this.Remove(INPUTSVG);
 
                 internalFilePath = "inputSVG.svg";
                 zipBag.Add(new ResourcePathInfo()
@@ -568,14 +603,14 @@ namespace FusionCharts.FusionExport.Client
                      internalPath = internalFilePath,
                      externalPath = oldValue
                 });
-
-                selfClone.Set(INPUTSVG, internalFilePath);                
+                this.configs[INPUTSVG] = internalFilePath;
+                //this.Set(INPUTSVG, internalFilePath);                
             }
 
-            if (selfClone.Has(CALLBACKS))
+            if (this.Has(CALLBACKS))
             {
-                oldValue = selfClone.Get(CALLBACKS).ToString();
-                selfClone.Remove(CALLBACKS);
+                oldValue = this.Get(CALLBACKS).ToString();
+                this.Remove(CALLBACKS);
 
                 internalFilePath = "callbackFile.js";
                 zipBag.Add(new ResourcePathInfo()
@@ -584,13 +619,13 @@ namespace FusionCharts.FusionExport.Client
                     externalPath = oldValue
                 });
 
-                selfClone.Set(CALLBACKS, internalFilePath);
+                this.configs[CALLBACKS] = internalFilePath;
             }
 
-            if (selfClone.Has(DASHBOARDLOGO))
+            if (this.Has(DASHBOARDLOGO))
             {
-                oldValue = selfClone.Get(DASHBOARDLOGO).ToString();
-                selfClone.Remove(DASHBOARDLOGO);
+                oldValue = this.Get(DASHBOARDLOGO).ToString();
+                this.Remove(DASHBOARDLOGO);
                 
                 var ext = new FileInfo(oldValue).Extension;
                 internalFilePath = string.Format("dashboardLogo{0}", ext.StartsWith(".")? ext: "." + ext);
@@ -600,36 +635,38 @@ namespace FusionCharts.FusionExport.Client
                     externalPath = oldValue
                 });
 
-                selfClone.Set(DASHBOARDLOGO, internalFilePath);                
+                this.configs[DASHBOARDLOGO] = internalFilePath;
             }
 
-            if (selfClone.Has(OUTPUTFILEDEFINITION))
+            if (this.Has(OUTPUTFILEDEFINITION))
             {
-                oldValue = selfClone.Get(OUTPUTFILEDEFINITION).ToString();
-                selfClone.Remove(OUTPUTFILEDEFINITION);
+                oldValue = this.Get(OUTPUTFILEDEFINITION).ToString();
+                this.Remove(OUTPUTFILEDEFINITION);
 
-                selfClone.Set(OUTPUTFILEDEFINITION, ReadFileContent(oldValue, encodeBase64: false));
+                this.configs[OUTPUTFILEDEFINITION] = ReadFileContent(oldValue, encodeBase64: false);
             }          
 
-            if (selfClone.Has(TEMPLATE))
+            if (this.Has(TEMPLATE))
             {
                 string templatePathWithinZip;
                 List<ResourcePathInfo> zipPaths;
-                selfClone.createTemplateZipPaths(out zipPaths, out templatePathWithinZip);
-                selfClone.Set(TEMPLATE, templatePathWithinZip);
+                this.createTemplateZipPaths(out zipPaths, out templatePathWithinZip);
+
+                this.configs[TEMPLATE] = templatePathWithinZip;
+
                 zipBag.AddRange(zipPaths);                
             }
 
-            if (selfClone.Has(ASYNCCAPTURE))
+            if (this.Has(ASYNCCAPTURE))
             {
-                oldValue = selfClone.Get(ASYNCCAPTURE).ToString();
-                selfClone.Remove(ASYNCCAPTURE);
+                oldValue = this.Get(ASYNCCAPTURE).ToString();
+                this.Remove(ASYNCCAPTURE);
 
                 if (!string.IsNullOrEmpty(oldValue))
                 {
                     if (Convert.ToBoolean(oldValue))
                     {
-                        selfClone.Set(ASYNCCAPTURE, true);
+                        this.configs[ASYNCCAPTURE] = true;
                     }
                 }
             }
@@ -637,11 +674,11 @@ namespace FusionCharts.FusionExport.Client
             if (zipBag.Count > 0)
             {
                 string zipFile = ExportConfig.generateZip(zipBag);
-                selfClone.Set(PAYLOAD, zipFile);
+                this.configs[PAYLOAD] = zipFile;
             }
             zipBag.Clear();
 
-            return selfClone;
+            return this;
         }
 
         private void createTemplateZipPaths(out List<ResourcePathInfo> outZipPaths, out string outTemplatePathWithinZip)

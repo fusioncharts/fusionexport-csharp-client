@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.1.0-beta</Version>
+    <Authors>FusionCharts</Authors>
+    <Company>FusionCharts</Company>
+    <Description>Language SDK for FusionExport which enables exporting of charts and dashboards through C#.</Description>
+    <PackageProjectUrl>https://github.com/fusioncharts/fusionexport-csharp-client</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/fusioncharts/fusionexport-csharp-client/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>C# language SDK for FusionExport system</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

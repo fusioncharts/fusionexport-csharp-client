@@ -16,7 +16,7 @@ namespace FusionExportTest
             using (ExportManager exportManager = new ExportManager())
             {
                 exportConfig.Set("templateFilePath", "./resources/template_amcharts.html");
-                exportConfig.Set("type", "jpg");
+                exportConfig.Set("type", "pdf");
                 exportConfig.Set("asyncCapture", true);
 
                 // Call the Export() method with the export config
