@@ -17,7 +17,7 @@ namespace FusionExportTest
             // Instantiate the ExportManager class
             using (ExportManager exportManager = new ExportManager())
             {
-                exportConfig.Set("chartConfig", File.ReadAllText("./resources/bulk.json"));
+                exportConfig.Set("chartConfig", "./resources/bulk.json");
                 
                 // Call the Export() method with the export config
                 results.AddRange(exportManager.Export(exportConfig));

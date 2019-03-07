@@ -11,7 +11,8 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            BulkExport.Run();
+            ExportSingleChart.Run();
+            //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
             //Chartjs_Exp.Run();
@@ -19,7 +20,6 @@ namespace examples
             //D3_Exp.Run();
             //Dashboard.Run();
             //DashboardLogoHead.Run();
-            //ExportSingleChart.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();
             //InjectJsCallback.Run();

@@ -226,7 +226,7 @@ namespace FusionCharts.FusionExport.Client
             {
                 if (configValue.GetType() != typeof(string) )
                 {
-                    string errMsg = string.Format("Invalid Data Type in parameter '{0}'\nPlease provide either serialized JSON string or JSON file.", configName.ToString());
+                    string errMsg = string.Format("'{0}' of type '{1}' is unsupported. Supported data types are string.", configName.ToString(), configValue.GetType().Name);
                     throw new Exception(errMsg);
                 }
 
@@ -262,8 +262,6 @@ namespace FusionCharts.FusionExport.Client
 
                     if (configValue.GetType() != expectedType)
                     {
-                        string errTitle = "Invalid Data Type";
-
                         switch (configName.ToLower())
                         {
                             case "templatefilepath":
