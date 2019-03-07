@@ -14,13 +14,38 @@ namespace FusionExportTest
             ExportConfig exportConfig = new ExportConfig();
             List<string> results = new List<string>();
 
+            string chartConfig = @"{
+                        ""type"": ""column2d"",
+                        ""renderAt"": ""chart-container"",
+                        ""width"": ""600"",
+                        ""height"": ""400"",
+                        ""dataFormat"": ""json"",
+                        ""dataSource"": {
+                            ""chart"": {
+                                ""caption"": ""Number of visitors last week"",
+                                ""subCaption"": ""Bakersfield Central vs Los Angeles Topanga""
+                            },
+                            ""data"": [{
+                                    ""label"": ""Mon"",
+                                    ""value"": ""15123""
+                                },{
+                                    ""label"": ""Tue"",
+                                    ""value"": ""14233""
+                                },{
+                                    ""label"": ""Wed"",
+                                    ""value"": ""25507""
+                                }
+                            ]
+                        }
+                    }";
+
             // Instantiate the ExportManager class
             using (ExportManager exportManager = new ExportManager())
             {
-                exportConfig.Set("chartConfig", File.ReadAllText("./resources/chart-config-file.json"));
+                exportConfig.Set("chartConfig", chartConfig);
 
                 // Call the Export() method with the export config
-                results.AddRange(exportManager.Export(exportConfig));
+                results.AddRange(exportManager.Export(exportConfig, "exported-charts", true));
             }
 
             foreach (string path in results)
