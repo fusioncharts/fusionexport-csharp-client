@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +6,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class InjectJsCallback
+    public static class Chartjs_Exp
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
@@ -17,9 +17,9 @@ namespace FusionExportTest
             // Instantiate the ExportManager class
             using (ExportManager exportManager = new ExportManager())
             {
-                exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
-                exportConfig.Set("templateFilePath", "./resources/template.html");
-                exportConfig.Set("callbackFilePath", "./resources/callback.js");
+                exportConfig.Set("templateFilePath", "./resources/template_chartjs.html");
+                exportConfig.Set("type", "jpg");
+                exportConfig.Set("asyncCapture", true);
 
                 // Call the Export() method with the export config
                 results.AddRange(exportManager.Export(exportConfig));
@@ -31,7 +31,6 @@ namespace FusionExportTest
             }
 
             Console.Read();
-
         }
     }
 }
