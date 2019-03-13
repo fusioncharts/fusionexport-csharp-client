@@ -1,171 +1,143 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using System.Net;
+﻿using System.Net;
 using System;
 using System.IO;
 using System.Linq;
-
+using System.Collections.Generic;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public delegate void ExportDoneListener(ExportEvent exportEvent, ExportException error);
-    public delegate void ExportStateChangedListener(ExportEvent exportEvent);
-
-    public class ExportManager
+    public class ExportManager: IDisposable
     {
         private string host;
         private int port;
+        private Exporter exporter = null;
 
         public ExportManager()
         {
             this.host = Constants.DEFAULT_HOST;
             this.port = Constants.DEFAULT_PORT;
+            exporter = new Exporter(this.host, this.port);
         }
 
         public ExportManager(string host, int port)
         {
             this.host = host;
             this.port = port;
+            exporter = new Exporter(this.host, this.port);
         }
 
+        ~ExportManager()
+        {
+            // The object went out of scope and finalized is called
+            // Lets call dispose in to release unmanaged resources 
+            // the managed resources will anyways be released when GC 
+            // runs the next time.
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            // If this function is being called the user wants to release the
+            // resources. lets call the Dispose which will do this for us.
+            Dispose(true);
+
+            // Now since we have done the cleanup already there is nothing left
+            // for the Finalizer to do. So lets tell the GC not to call it later.
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing == true)
+            {
+                //Lets release all the managed resources
+                ReleaseManagedResources();
+            }
+        }
+
+        private void ReleaseManagedResources()
+        {
+            if (exporter != null)
+            {
+                exporter.Close();
+                exporter = null;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+        
         public string Host
         {
             get { return host; }
-            set { host = value; }
         }
 
         public int Port
         {
             get { return port; }
-            set { port = value; }
         }
 
-        public Exporter Export(ExportConfig exportConfig)
+        public List<string> ConvertResultToBase64String(List<string> ExportedFiles)
         {
-            Exporter exporter = new Exporter(exportConfig);
-            exporter.SetExportConnectionConfig(this.host, this.port);
-            exporter.Start();
-            return exporter;
-        }
+            if (ExportedFiles == null || ExportedFiles.Count == 0) throw new Exception("List of exported files is empty.");
+            //List<string> ExportedFiles = ExportChart(exportConfig, Path.GetTempPath(), true);
+            List<string> Base64Data = new List<string>();
 
-        public Exporter Export(ExportConfig exportConfig, ExportDoneListener exportDoneListener)
-        {
-            Exporter exporter = new Exporter(exportConfig, exportDoneListener);
-            exporter.SetExportConnectionConfig(this.host, this.port);
-            exporter.Start();
-            return exporter;
-        }
-
-        public Exporter Export(ExportConfig exportConfig, ExportStateChangedListener exportStateChangedListener)
-        {
-            Exporter exporter = new Exporter(exportConfig, exportStateChangedListener);
-            exporter.SetExportConnectionConfig(this.host, this.port);
-            exporter.Start();
-            return exporter;
-        }
-
-        public Exporter Export(ExportConfig exportConfig, ExportDoneListener exportDoneListener, ExportStateChangedListener exportStateChangedListener)
-        {
-            Exporter exporter = new Exporter(exportConfig, exportDoneListener, exportStateChangedListener);
-            exporter.SetExportConnectionConfig(this.host, this.port);
-            exporter.Start();
-            return exporter;
-        }
-
-
-        public static void SaveExportedFiles(string dirPath, ExportCompleteData exportedFiles)
-        {
-           
-            foreach (var fileElement in exportedFiles.data)
+            foreach (string file in ExportedFiles)
             {
-                var fullPath = Path.Combine(dirPath, fileElement.realName);
-                var contentBytes = Convert.FromBase64String(fileElement.fileContent);
-
-                File.WriteAllBytes(fullPath, contentBytes);
-                
+                Base64Data.Add(Utils.Utils.ReadFileContent(file, true));
             }
+            return Base64Data;
         }
-        /// <summary>
-        /// return region of that particular bucket
-        /// </summary>
-        /// <param name="bucketName"></param>
-        /// <param name="accessKey"></param>
-        /// <param name="secretAccessKey"></param>
-        /// <returns></returns>
-        private static S3Region GetBucketRegion(string bucketName,string accessKey, string secretAccessKey)
+
+        public List<string> Export(ExportConfig exportConfig)
         {
-            // create client with a default region. in our case it is "USEAST1"
-            AmazonS3Client client = new AmazonS3Client(accessKey, secretAccessKey, Amazon.RegionEndpoint.USEast1);
-            GetBucketLocationRequest request = new GetBucketLocationRequest();
-            request.BucketName = bucketName;
-            GetBucketLocationResponse response = client.GetBucketLocation(request);
-            return response.Location;
-
-
+            return ExportChart(exportConfig);
         }
-        /// <summary>
-        /// upload exported file(s) to AS3
-        /// </summary>
-        /// <param name="exportedFiles"></param>
-        /// <param name="bucket"></param>
-        /// <param name="accessKey"></param>
-        /// <param name="secretAccessKey"></param>
-        public static void UploadFileToAmazonS3(ExportCompleteData exportedFiles, string bucket, string accessKey, string secretAccessKey)
+
+        public List<string> Export(ExportConfig exportConfig, string outputDir)
         {
-            // get region of the provided bucket in which user wants to upload the file
-            S3Region region;
-            try
-            {
-                region = GetBucketRegion(bucket, accessKey, secretAccessKey);
-            }
-            catch(AmazonS3Exception)
-            {
-                throw new FusionExportAmazonS3Exception("Incorrect credentials");
-            }
-           
-
-            AmazonS3Client client = new AmazonS3Client(accessKey, secretAccessKey, Amazon.RegionEndpoint.GetBySystemName(region.Value.ToString()));
-
-            PutObjectRequest request = new PutObjectRequest();
-
-            foreach(var fileElement in exportedFiles.data)
-            {
-                using (MemoryStream stream = new MemoryStream(Convert.FromBase64String(fileElement.fileContent)))
-                {
-                    request.InputStream = stream;
-                    request.BucketName = bucket;
-                    request.Key = fileElement.realName;
-                    client.PutObject(request);
-                }
-                
-            }
+            return ExportChart(exportConfig, outputDir, true);
         }
-        /// <summary>
-        /// upload exported file to ftp server
-        /// </summary>
-        /// <param name="exportedFiles"></param>
-        /// <param name="userName"></param>
-        /// <param name="password"></param>
-        /// <param name="remoteAddress"></param>
-        public static void UploadFileToFTPServer(ExportCompleteData exportedFiles, string userName, string password,string host,string remoteAddress,int port = 21)
+
+        public List<string> Export(ExportConfig exportConfig, bool unzip)
         {
-            using (WebClient ftpClient = new WebClient())
-            {
-                ftpClient.Credentials = new NetworkCredential(userName, password);
-                
-                foreach (var fileElement in exportedFiles.data)
-                {
-                    byte[] fileContents = Convert.FromBase64String(fileElement.fileContent);
-                    ftpClient.UploadData(string.Concat(host ,":",port, "/",remoteAddress,"/",fileElement.realName), fileContents);
-                }
-
-
-            }
-            
+            return ExportChart(exportConfig, null, unzip);
         }
-        public static string[] GetExportedFileNames(ExportCompleteData exportedFiles)
+
+        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
         {
-            return exportedFiles.data.Select((ele) => ele.realName).ToArray();
+            return ExportChart(exportConfig, outputDir, unzip);
         }
+
+        private List<string> ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true)
+        {
+            exporter.ExportConfig = exportConfig;
+            string zipPath = exporter.Start();
+
+            if (string.IsNullOrEmpty(outputDir))
+            {
+                outputDir = Utils.Utils.GetBaseDirectory();
+            }
+
+            DirectoryInfo dirInfo = new DirectoryInfo(outputDir);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+
+            if (!unzip)
+            {
+                FileInfo fn = new FileInfo(zipPath);
+                string fileFullName = Path.Combine(outputDir, fn.Name);
+                fn.CopyTo(fileFullName, true);
+
+                return new List<string>(new string[] { fileFullName });
+            }
+            else
+            {                
+                return Utils.Utils.ExtractZipInDirectory(zipPath, outputDir);
+            }
+        }        
     }
 }

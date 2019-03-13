@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmazonS3_Upload.cs" />
     <Compile Include="Amcharts_Exp.cs" />
     <Compile Include="AsyncCapture.cs" />
     <Compile Include="BulkExport.cs" />
@@ -53,7 +52,6 @@
     <Compile Include="Dashboard.cs" />
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />
-    <Compile Include="FTP_Upload.cs" />
     <Compile Include="GoogleCharts_Exp.cs" />
     <Compile Include="Highcharts_Exp.cs" />
     <Compile Include="InjectJsCallback.cs" />
