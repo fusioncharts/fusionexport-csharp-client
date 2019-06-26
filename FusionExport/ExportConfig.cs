@@ -105,7 +105,7 @@ namespace FusionCharts.FusionExport.Client
                     resource.Read(bytes, 0, (int)resource.Length);
                 }
                 var jsonContent = System.Text.Encoding.UTF8.GetString(bytes);
-                
+
 
                 //var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resource.fusionexport_typings);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
