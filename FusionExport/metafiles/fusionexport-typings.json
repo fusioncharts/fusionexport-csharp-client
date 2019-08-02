@@ -1,59 +1,138 @@
 {
   "chartConfig": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "string", "file" ],
+    "converter": "ChartConfigConverter"
   },
   "inputSVG": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
   },
-  "templateFormat": {
-    "type": "string"
+  "template": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
   },
   "templateFilePath": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
   },
   "templateWidth": {
-    "type": "string"
+    "type": "integer",
+    "supportedTypes": [ "string", "integer" ],
+    "converter": "NumberConverter"
   },
   "templateHeight": {
-    "type": "string"
+    "type": "integer",
+    "supportedTypes": [ "string", "integer" ],
+    "converter": "NumberConverter"
+  },
+  "templateFormat": {
+    "type": "string",
+    "supportedTypes": [ "enum" ],
+    "converter": "EnumConverter",
+    "dataset": [
+      "Letter",
+      "Legal",
+      "Tabloid",
+      "Ledger",
+      "A0",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5"
+    ]
   },
   "callbackFilePath": {
-    "type": "integer"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
   },
   "asyncCapture": {
     "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
     "converter": "BooleanConverter"
   },
   "maxWaitForCaptureExit": {
     "type": "integer",
+    "supportedTypes": [ "string", "integer" ],
     "converter": "NumberConverter"
   },
   "dashboardLogo": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
   },
   "dashboardHeading": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "string" ]
   },
   "dashboardSubheading": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "string" ]
   },
   "outputFile": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "string" ]
   },
   "type": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "enum" ],
+    "converter": "EnumConverter",
+    "dataset": [
+      "jpeg",
+      "jpg",
+      "png",
+      "pdf",
+      "svg",
+      "html",
+      "csv",
+      "xls",
+      "xlsx"
+    ]
   },
   "quality": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "enum" ],
+    "converter": "EnumConverter",
+    "dataset": [
+      "good",
+      "better",
+      "best"
+    ]
   },
   "outputFileDefinition": {
-    "type": "string"
-  },
-  "exportAsZip": {
-    "type": "boolean",
-    "converter": "BooleanConverter"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
   },
   "resourceFilePath": {
-    "type": "string"
+    "type": "string",
+    "supportedTypes": [ "file" ],
+    "converter": "FileConverter"
+  },
+  "headerEnabled": {
+    "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
+    "converter": "BooleanConverter"
+  },
+  "footerEnabled": {
+    "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
+    "converter": "BooleanConverter"
+  },
+  "pageMargin": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+  "headerComponents": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+  "footerComponents": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
   }
 }

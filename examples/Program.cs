@@ -11,7 +11,8 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            ExportSingleChart.Run();
+            Header_Footer.Run();
+            //ExportSingleChart.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
