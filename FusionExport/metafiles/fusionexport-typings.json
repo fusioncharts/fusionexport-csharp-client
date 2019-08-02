@@ -112,5 +112,27 @@
     "type": "string",
     "supportedTypes": [ "file" ],
     "converter": "FileConverter"
+  },
+  "headerEnabled": {
+    "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
+    "converter": "BooleanConverter"
+  },
+  "footerEnabled": {
+    "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
+    "converter": "BooleanConverter"
+  },
+  "pageMargin": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+  "headerComponents": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+  "footerComponents": {
+    "type": "string",
+    "supportedTypes": [ "string" ]
   }
 }

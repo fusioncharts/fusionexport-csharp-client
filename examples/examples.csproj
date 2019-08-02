@@ -49,6 +49,7 @@
     <Compile Include="Chartjs_Exp.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
+    <Compile Include="Header_Footer.cs" />
     <Compile Include="Dashboard.cs" />
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />

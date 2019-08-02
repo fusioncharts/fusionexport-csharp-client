@@ -39,13 +39,19 @@ namespace FusionExportTest
                         }
                     }";
 
+            string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\dashboard_charts.json";
+            string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\template.html";
+
             // Instantiate the ExportManager class
             using (ExportManager exportManager = new ExportManager())
             {
-                exportConfig.Set("chartConfig", chartConfig);
-
+                exportConfig.Set("chartConfig", chartConfigFile);
+                exportConfig.Set("templateFilePath", templateFilePath);
+                exportConfig.Set("templateFormat", "letter");
+                exportConfig.Set("type", "pdf");
                 // Call the Export() method with the export config
-                results.AddRange(exportManager.Export(exportConfig, ".\\exported-charts", true));
+                //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));
+                results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true));
             }
 
             foreach (string path in results)
