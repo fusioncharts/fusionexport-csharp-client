@@ -11,7 +11,22 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            BulkExport.Run(host: "192.168.0.192",port: 1337);
+            Header_Footer.Run();
+            //ExportSingleChart.Run();
+            //BulkExport.Run();
+            //Amcharts_Exp.Run();
+            //AsyncCapture.Run();
+            //Chartjs_Exp.Run();
+            //ConvertSvg.Run();
+            //D3_Exp.Run();
+            //Dashboard.Run();
+            //DashboardLogoHead.Run();
+            //GoogleCharts_Exp.Run();
+            //Highcharts_Exp.Run();
+            //InjectJsCallback.Run();
+            //OutputAsZip.Run();
+            //Quality.Run();
+            //ZingChart_Exp.Run();
             Console.ReadKey();
         }
     }

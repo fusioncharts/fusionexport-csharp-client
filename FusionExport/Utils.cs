@@ -3,9 +3,10 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
-using NDepend.Path;
-using Newtonsoft.Json.Serialization;
+//using NDepend.Path;
+//using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace FusionCharts.FusionExport.Utils
 {
@@ -23,10 +24,16 @@ namespace FusionCharts.FusionExport.Utils
             }
         }
 
-        public static string GetTempFolderName()
+        public static string GetTempFolderName(bool ensureDirectoryExist = false)
         {
             var folderName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
-            return Path.GetFullPath(Path.Combine(Path.GetTempPath(), folderName));
+            string tempPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), folderName));
+
+            if (ensureDirectoryExist && !Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
+            return tempPath;
         }
 
         public static string GetTempFileName()
@@ -77,14 +84,22 @@ namespace FusionCharts.FusionExport.Utils
 
         }
 
+        public static string GetAbsolutePathFrom(string filePath)
+        {
+            //return filePath.ToAbsoluteFilePath().FileInfo.FullName;
+            return Path.GetFullPath((new Uri(filePath)).LocalPath);
+        }
+
         public static string GetRelativePathFrom(string absoluteFilePath, string baseDirectoryPath)
         {
-            var absoluteNDependFilePath = absoluteFilePath.ToAbsoluteFilePath();
-            var baseNDependDirectoryPath = baseDirectoryPath.ToAbsoluteDirectoryPath();
+            //var absoluteNDependFilePath = absoluteFilePath.ToAbsoluteFilePath();
+            //var baseNDependDirectoryPath = baseDirectoryPath.ToAbsoluteDirectoryPath();
 
-            var relativeNDependFilePath = absoluteNDependFilePath.GetRelativePathFrom(baseNDependDirectoryPath);
+            //var relativeNDependFilePath = absoluteNDependFilePath.GetRelativePathFrom(baseNDependDirectoryPath);
+            //return relativeNDependFilePath.ToString();
 
-            return relativeNDependFilePath.ToString();
+            string relativePath = absoluteFilePath.Replace(baseDirectoryPath, ".");
+            return relativePath;
         }
 
         public static bool IsWithinPath(string checkeePath, string parentDirectoryPath)
@@ -104,7 +119,16 @@ namespace FusionCharts.FusionExport.Utils
             }
             else
             {
-                return Path.Combine(basePath, extraPath);
+                string path = Path.Combine(basePath, extraPath);
+                if (path.Equals(extraPath))
+                {
+                    path = Path.GetFullPath(extraPath);
+                }
+                else if (path.Contains("..") || path.Contains("."))
+                {
+                    path = Path.GetFullPath(path);
+                }
+                return path;
             }
         }
 
@@ -142,6 +166,7 @@ namespace FusionCharts.FusionExport.Utils
                 }
                 catch (Exception ex)
                 {
+                    /*
                     if (
                         (ex is PathTooLongException) ||
                         (ex is DirectoryNotFoundException) ||
@@ -156,6 +181,8 @@ namespace FusionCharts.FusionExport.Utils
                     {
                         throw ex;
                     }
+                    */
+                    throw ex;
                 }
             }
             else
@@ -187,6 +214,38 @@ namespace FusionCharts.FusionExport.Utils
             }
         }
 
+        public static List<String> ExtractZipInDirectory(string zipFullName, string destinationZipFolder)
+        {
+            List<String> files = new List<string>();
+
+            if (File.Exists(zipFullName))
+            {
+                if (!Directory.Exists(destinationZipFolder))
+                {
+                    Directory.CreateDirectory(destinationZipFolder);
+                }
+
+                using (ZipFile zip = ZipFile.Read(zipFullName))
+                {
+                    zip.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
+                    zip.ExtractAll(destinationZipFolder);
+
+                    foreach(ZipEntry entry in zip.Entries)
+                    {
+                        if (!entry.IsDirectory)
+                        {
+                            string filePath = Path.Combine(destinationZipFolder, entry.FileName.ToString());
+                            //files.Add(Path.Combine(filePath.ToAbsoluteFilePath().FileInfo.FullName));
+                            files.Add(Path.GetFullPath((new Uri(filePath)).LocalPath));
+                            //files.Add(Path.GetFullPath(filePath));
+                        }
+                    }
+                }
+            }
+
+            return files;
+        }
+
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
             TKey key,
             TValue defaultValue)
@@ -194,5 +253,41 @@ namespace FusionCharts.FusionExport.Utils
             TValue value;
             return dictionary.TryGetValue(key, out value) ? value : defaultValue;
         }
+
+        public static string GetBaseDirectory()
+        {
+            return AppDomain.CurrentDomain.BaseDirectory;
+        }
+
+        public static void DeleteFile(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch { }
+        }
+
+        public static StreamContent CloneStreamContent(StreamContent content)
+        {
+            try
+            {
+                MemoryStream ms = new MemoryStream();
+                using (System.Threading.Tasks.Task task = content.CopyToAsync(ms))
+                {
+                    task.Wait();
+                }
+
+                ms.Seek(0, SeekOrigin.Begin);
+                return new StreamContent(ms);
+            }
+            catch { }
+
+            return content;
+        }
+
     }
 }

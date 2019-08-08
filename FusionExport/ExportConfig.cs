@@ -1,53 +1,113 @@
 ﻿using FusionCharts.FusionExport.Utils;
-using Glob;
+using GlobExpressions;
 using HtmlAgilityPack;
+using Ionic.Zip;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using static FusionCharts.FusionExport.Utils.Utils;
 
 
 namespace FusionCharts.FusionExport.Client
 {
-    public class ExportConfig
+    public class ExportConfig : IDisposable
     {
         const string CHARTCONFIG = "chartConfig";
         const string INPUTSVG = "inputSVG";
         const string CALLBACKS = "callbackFilePath";
-        const string DASHBOARDLOGO = "dashboardlogo";
+        const string DASHBOARDLOGO = "dashboardLogo";
         const string OUTPUTFILEDEFINITION = "outputFileDefinition";
         const string CLIENTNAME = "clientName";
         const string TEMPLATE = "templateFilePath";
         const string RESOURCES = "resourceFilePath";
-
+        const string PLATFORM = "platform";
+        const string ASYNCCAPTURE = "asyncCapture";
+        const string PAYLOAD = "payload";
+        const string TEMPLATEURL = "templateURL";
         public class MetadataElementSchema
         {
             public enum ElementType
             {
                 String,
                 boolean,
-                Integer
+                Integer,
+                Enum
             };
-
-
+            /*
+            public enum SupportedTypes
+            {
+                String,
+                Object,
+                File,
+                Integer,
+                Enum,
+                Boolean
+            };
+            */
             public enum Converter
             {
                 PassThrough,
                 BooleanConverter,
                 NumberConverter,
+                ChartConfigConverter,
+                EnumConverter,
+                FileConverter
             };
-
-
+            /*
+            public enum Dataset
+            {
+                Letter,
+                Legal,
+                Tabloid,
+                Ledger,
+                A0,
+                A1,
+                A2,
+                A3,
+                A4,
+                A5,
+                jpeg,
+                jpg,
+                png,
+                pdf,
+                svg,
+                html,
+                csv,
+                xls,
+                xlsx,
+                good,
+                better,
+                best
+            };
+            */
             public ElementType type;
             public Converter converter;
+            public string[] supportedTypes; //SupportedTypes 
+            public string[] dataset;
+            //public Dataset dataset;
         }
         public class MetadataSchema : Dictionary<string, MetadataElementSchema>
         {
+            private string[] templateFormat = new string[] { "letter", "legal", "tabloid", "ledger", "a0", "a1", "a2", "a3", "a4", "a5" };
+
             public static MetadataSchema CreateFromMetaDataJSON()
             {
-                var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resources.metadataContent);
+                /*
+                // The below codes are not working, hence came up with another approach, which is to directly accessing the Resource property
+                var assembly = typeof(FusionExport.Client.Exporter).Assembly;
+                byte[] bytes = null;
+                using (Stream resource = assembly.GetManifestResourceStream("FusionExport.Resources.fusionexport-typings.json"))
+                {
+                    bytes = new byte[resource.Length];
+                    resource.Read(bytes, 0, (int)resource.Length);
+                }
+                var jsonContent = System.Text.Encoding.UTF8.GetString(bytes);
+                */
+
+                var jsonContent = System.Text.Encoding.UTF8.GetString(Properties.Resource.fusionexport_typings);
                 return JsonConvert.DeserializeObject<MetadataSchema>(jsonContent);
             }
 
@@ -58,14 +118,47 @@ namespace FusionCharts.FusionExport.Client
                 {MetadataElementSchema.ElementType.Integer, typeof(int)},
             };
 
-            public Dictionary<MetadataElementSchema.Converter, Func<object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object>>()
+            public Dictionary<MetadataElementSchema.Converter, Func<object, object, object, object>> ConverterMap = new Dictionary<MetadataElementSchema.Converter, Func<object, object, object, object>>()
             {
-                {MetadataElementSchema.Converter.PassThrough, (object configValue) => configValue},
-                {MetadataElementSchema.Converter.BooleanConverter, (object configValue) => BooleanFromStringNumber(configValue)},
-                {MetadataElementSchema.Converter.NumberConverter, (object configValue) => NumberFromString(configValue)},
+                {MetadataElementSchema.Converter.PassThrough, (object configValue,object configName, object metadata) => configValue},
+                {MetadataElementSchema.Converter.BooleanConverter, (object configValue, object configName, object metadata) => BooleanFromStringNumber(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.NumberConverter, (object configValue, object configName, object metadata) => NumberFromString(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.ChartConfigConverter, (object configValue, object configName, object metadata) => ChartConfigConverter(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.EnumConverter, (object configValue, object configName, object metadata) => EnumConverter(configValue,configName, metadata)},
+                {MetadataElementSchema.Converter.FileConverter, (object configValue, object configName, object metadata) => FileConverter(configValue,configName, metadata)},
             };
 
-            public static bool BooleanFromStringNumber(object configValue)
+            private static object FileConverter(object configValue, object configName, object metadata)
+            {
+                if (!File.Exists(configValue.ToString()))
+                {
+                    throw new FileNotFoundException(string.Format("Parameter name: {0} ---> [URL/Path] not found. Please provide an appropriate path.", configName));
+                }
+
+                return configValue;
+            }
+
+                private static object EnumConverter(object configValue, object configName, object metadata)
+            {
+                if (configValue.GetType() != typeof(string))
+                {
+                    string errMsg = string.Format("Invalid Data Type in parameter '{0}'\nData should be a string.", configName.ToString());
+                    throw new Exception(errMsg);
+                }
+
+                MetadataElementSchema metadataElement = (MetadataElementSchema)metadata;
+
+                if (!metadataElement.dataset.Any(i => i.ToLower().Equals(configValue.ToString().ToLower())))
+                {
+                    string supportParams = string.Join(", ", metadataElement.dataset);
+                    string errMsg = string.Format("Invalid argument value in parameter '{0}'\nSupported parameters are: {1}", configName.ToString(), supportParams);
+                    throw new Exception(errMsg);
+                }
+
+                return configValue;
+            }
+
+            public static bool BooleanFromStringNumber(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() == typeof(bool))
                 {
@@ -73,8 +166,7 @@ namespace FusionCharts.FusionExport.Client
                 }
                 else if (configValue.GetType() == typeof(string))
                 {
-                    string value = (string)configValue;
-                    value = value.ToLower();
+                    string value = configValue.ToString().ToLower();
 
                     if ((value == "true") || (value == "1"))
                     {
@@ -112,7 +204,7 @@ namespace FusionCharts.FusionExport.Client
                 }
             }
 
-            public static int NumberFromString(object configValue)
+            public static int NumberFromString(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() == typeof(int))
                 {
@@ -120,7 +212,7 @@ namespace FusionCharts.FusionExport.Client
                 }
                 else if (configValue.GetType() == typeof(string))
                 {
-                    string value = (string)configValue;
+                    string value = configValue.ToString();
 
                     return Int32.Parse(value);
                 }
@@ -130,8 +222,38 @@ namespace FusionCharts.FusionExport.Client
                 }
             }
 
-            public void CheckType(string configName, object configValue)
+            public static string ChartConfigConverter(object configValue, object configName, object metadata)
             {
+                if (configValue.GetType() != typeof(string) )
+                {
+                    string errMsg = string.Format("'{0}' of type '{1}' is unsupported. Supported data types are string.", configName.ToString(), configValue.GetType().Name);
+                    throw new Exception(errMsg);
+                }
+
+                string valueStr = configValue.ToString();
+
+                if (valueStr.ToLower().EndsWith(".json"))
+                {
+                    if (!File.Exists(valueStr))
+                    {
+                        throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: chartConfig ---> chartConfig [URL] not found. Please provide an appropriate path."));
+                    }
+                    
+                    // Read the file content and convert to string
+                    valueStr = File.ReadAllText(valueStr);
+                }
+                if (!IsValidJson(valueStr))
+                {
+                    throw new InvalidDataException("Invalid ChartConfig JSON", new Exception("JSON structure is invalid. Please check your JSON data."));
+                }
+
+                return valueStr;
+            }
+
+            public void CheckType(Dictionary<string, object> configs, string configName, object configValue)
+            {
+                string errMsg = string.Empty;
+
                 if (this.ContainsKey(configName))
                 {
                     var metadataElement = this[configName];
@@ -140,8 +262,99 @@ namespace FusionCharts.FusionExport.Client
 
                     if (configValue.GetType() != expectedType)
                     {
-                        throw new ArgumentException();
+                        switch (configName.ToLower())
+                        {
+                            case "templatefilepath":
+                                errMsg = "Data should be in file path of template file";
+                                break;
+                            case "template":
+                                errMsg = "Data should be a HTML template string";
+                                break;
+                            case "templateurl":
+                                errMsg = "Data should be a string";
+                                break;
+                            case "templatewidth":
+                            case "templateheight":
+                                errMsg = "Data should be a string or number";
+                                break;
+                            case "templateformat":
+                                errMsg = "Please follow the documentation to learn more.";
+                                break;
+                        }
+
+                        errMsg = string.Format("Invalid Data Type in parameter '{0}'\n{1}", configName, errMsg);
+                        throw new Exception(errMsg);
                     }
+
+                    string valueStr = configValue.ToString().ToLower();
+
+                    switch (configName.ToLower())
+                    {
+                        case "template":
+                            if (!valueStr.StartsWith("<") || !valueStr.EndsWith("</html>"))
+                            {
+                                errMsg = string.Format("Invalid HTML in parameter '{0}'\nData should be a valid HTML template string.", configName);
+                                throw new Exception(errMsg);
+                            }
+                            break;
+                        case "templatefilepath":
+                            if (!File.Exists(valueStr))
+                            {
+                                throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: templateFilePath ---> The HTML file which you have provided does not exist. Please provide a valid file."));
+                            }
+                            break;
+                        case "templateurl":
+                            try
+                            {
+                                new Uri(valueStr);
+                            }
+                            catch
+                            {
+                                errMsg = string.Format("Invalid URL in parameter '{0}'\nData should be a valid URL", configName);
+                                throw new Exception(errMsg);
+                            }
+                            break;
+                        case "templatewidth":
+                        case "templateheight":
+                            if (configValue.GetType() == typeof(string))
+                            {
+                                try
+                                {
+                                    int.Parse(valueStr);
+                                }
+                                catch
+                                {
+                                    errMsg = string.Format("Parse Failure in parameter '{0}'\nData should be a parsable number", configName);
+                                    throw new Exception(errMsg);
+                                }
+                            }
+                            break;
+                        case "templateformat":
+                            if (!templateFormat.Contains(valueStr))
+                            {
+                                errMsg = string.Format("Invalid Format in parameter '{0}'\nInvalid format provided. Please follow the documentation to learn more", configName);
+                                throw new Exception(errMsg);
+                            }
+
+                            break;
+                    }
+
+                    if (configName.Equals("template"))
+                    {
+                        if (configs.ContainsKey("templateFilePath"))
+                        {
+                            Console.WriteLine("Both 'templateFilePath' and 'template' is provided. 'templateFilePath' will be ignored.");
+                        }
+                    }
+                    else if (configName.Equals("templateFilePath"))
+                    {
+                        if (configs.ContainsKey("template"))
+                        {
+                            Console.WriteLine("Both 'templateFilePath' and 'template' is provided. 'templateFilePath' will be ignored.");
+                        }
+                    }
+
+                    configs[configName] = configValue;
                 }
                 else
                 {
@@ -158,7 +371,7 @@ namespace FusionCharts.FusionExport.Client
                     object convertedValue;
                     if (ConverterMap.ContainsKey(metadataElement.converter))
                     {
-                        convertedValue = ConverterMap[metadataElement.converter](configValue);
+                        convertedValue = ConverterMap[metadataElement.converter](configValue, configName, metadataElement);
                     }
                     else
                     {
@@ -171,37 +384,82 @@ namespace FusionCharts.FusionExport.Client
             }
         }
 
+        private static bool IsValidJson(string jsonString)
+        {
+            jsonString = jsonString.Trim();
+            if ((jsonString.StartsWith("{") && jsonString.EndsWith("}")) || //For object
+                (jsonString.StartsWith("[") && jsonString.EndsWith("]"))) //For array
+            {
+                try
+                {
+                    var obj = Newtonsoft.Json.Linq.JToken.Parse(jsonString);
+                    return true;
+                }
+                catch 
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public class ResourcePathInfo
+        {
+            public string internalPath { get; set; }
+            public string externalPath { get; set; }
+        }
 
         private class ResourcesSchema
         {
             public string basePath;
 
             public List<string> include, exclude;
+
+            public string resolvePath;
         }
 
         private MetadataSchema metadata;
         private Dictionary<string, object> configs;
         private bool enableTypeCheckAndConversion;
 
-        public ExportConfig(bool enableTypeCheckAndConversion = true)
+        public void Dispose()
         {
-            this.enableTypeCheckAndConversion = enableTypeCheckAndConversion;
+            if (metadata != null)
+            {
+                metadata.Clear();
+                metadata = null;
+            }
 
-            this.metadata = MetadataSchema.CreateFromMetaDataJSON();
-            this.configs = new Dictionary<string, object>();
+            if (configs != null)
+            {
+                this.Clear();
+                configs = null;
+            }
         }
 
+        //public ExportConfig(bool enableTypeCheckAndConversion = true)
+        public ExportConfig()
+        {
+            this.enableTypeCheckAndConversion = true;
 
+            this.metadata = MetadataSchema.CreateFromMetaDataJSON();
+            this.configs = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+        }
 
         public void Set(string configName, object configValue)
         {
             if (enableTypeCheckAndConversion)
             {
                 configValue = this.metadata.TryConvertType(configName, configValue);
-                this.metadata.CheckType(configName, configValue);
+                this.metadata.CheckType(configs, configName, configValue);
             }
-
-            configs[configName] = configValue;
+            else
+            {
+                configs[configName] = configValue;
+            }
         }
 
         public object Get(string configName)
@@ -226,7 +484,16 @@ namespace FusionCharts.FusionExport.Client
 
         public void Clear()
         {
-            this.configs.Clear();
+            if (this.configs != null && this.configs.Count > 0)
+            {
+                if (this.configs.ContainsKey(PAYLOAD))
+                {
+                    string payloadFilePath = this.configs[PAYLOAD].ToString();
+                    Utils.Utils.DeleteFile(payloadFilePath);
+                }
+
+                this.configs.Clear();
+            }
         }
 
         public int Count
@@ -264,95 +531,245 @@ namespace FusionCharts.FusionExport.Client
             return newExportConfig;
         }
 
-        public string GetFormattedConfigs()
+        public MultipartFormDataContent GetFormattedConfigs()
         {
-            var clonedSelf = this.CloneWithProcessedProperties();
-            return JsonConvert.SerializeObject(clonedSelf.configs);
+            MultipartFormDataContent formDataContent = new MultipartFormDataContent();
+
+            using (ExportConfig clonedSelf = this.CloneWithProcessedProperties())
+            {
+                foreach (var config in clonedSelf.configs)
+                {
+                    if (config.Key.Equals(ExportConfig.PAYLOAD))
+                    {
+                        using (StreamContent streamContent = new StreamContent(File.Open(config.Value.ToString(), FileMode.Open)))
+                        {
+                            formDataContent.Add(Utils.Utils.CloneStreamContent(streamContent), config.Key, "file");                            
+                        }
+                    }
+                    else
+                    {
+                        formDataContent.Add(new StringContent(config.Value.ToString().Replace("\n", "").Replace("\r", "")), config.Key);
+                    }
+                }
+            }
+            return formDataContent;
         }
 
         public ExportConfig CloneWithProcessedProperties()
         {
-            var selfClone = this.Clone();
-            selfClone.enableTypeCheckAndConversion = false;
+            string internalFilePath, oldValue;
 
-            selfClone.Set(CLIENTNAME, "C#");
+            List<ResourcePathInfo> zipBag = new List<ResourcePathInfo>();
 
-            if (selfClone.Has(CHARTCONFIG))
+            //var this = this.Clone();
+            //this.enableTypeCheckAndConversion = false;
+
+            this.configs[CLIENTNAME] = "C#";
+            this.configs[PLATFORM] = Environment.OSVersion.Platform.ToString();
+            
+            /*
+            if (this.Has(CHARTCONFIG))
             {
-                var oldValue = (string)selfClone.Get(CHARTCONFIG);
-                selfClone.Remove(CHARTCONFIG);
+                oldValue = this.Get(CHARTCONFIG).ToString();
+                string trimmedValue = oldValue.Replace("\n", "").Replace("\t", "").Replace("\r", "");
+                this.Remove(CHARTCONFIG);
 
-                selfClone.Set(CHARTCONFIG, ReadFileContent(oldValue, encodeBase64: false));
-            }
-
-            if (selfClone.Has(INPUTSVG))
-            {
-                var oldValue = (string)selfClone.Get(INPUTSVG);
-                selfClone.Remove(INPUTSVG);
-
-                selfClone.Set(INPUTSVG, ReadFileContent(oldValue, encodeBase64: true));
-            }
-
-            if (selfClone.Has(CALLBACKS))
-            {
-                var oldValue = (string)selfClone.Get(CALLBACKS);
-                selfClone.Remove(CALLBACKS);
-
-                selfClone.Set(CALLBACKS, ReadFileContent(oldValue, encodeBase64: true));
-            }
-
-            if (selfClone.Has(DASHBOARDLOGO))
-            {
-                var oldValue = (string)selfClone.Get(DASHBOARDLOGO);
-                selfClone.Remove(DASHBOARDLOGO);
-
-                selfClone.Set(DASHBOARDLOGO, ReadFileContent(oldValue, encodeBase64: true));
-            }
-
-            if (selfClone.Has(OUTPUTFILEDEFINITION))
-            {
-                var oldValue = (string)selfClone.Get(OUTPUTFILEDEFINITION);
-                selfClone.Remove(OUTPUTFILEDEFINITION);
-
-                selfClone.Set(OUTPUTFILEDEFINITION, ReadFileContent(oldValue, encodeBase64: false));
-            }
-
-            {
-                string contentZipbase64, templateFilePathWithinZip;
-                selfClone.CreateBase64ZippedTemplate(out contentZipbase64, out templateFilePathWithinZip);
-
-                if (!string.IsNullOrEmpty(contentZipbase64))
+                if (oldValue.ToLower().EndsWith(".json"))
                 {
-                    selfClone.Set(RESOURCES, contentZipbase64);
+                    oldValue = ReadFileContent(oldValue, encodeBase64: false);
                 }
-                if (!string.IsNullOrEmpty(templateFilePathWithinZip))
+                else if (((trimmedValue.StartsWith("{") && trimmedValue.EndsWith("}")) || (trimmedValue.StartsWith("[") && trimmedValue.EndsWith("]"))))
                 {
-                    selfClone.Set(TEMPLATE, templateFilePathWithinZip);
+
+                }
+                else
+                {
+                    throw new Exception("Invalid Data Type: Data should be in either serialized JSON, file path of JSON file.");
                 }
 
+                this.Set(CHARTCONFIG, oldValue);
+            }
+            */
+
+            if (this.Has(INPUTSVG))
+            {
+                oldValue = this.Get(INPUTSVG).ToString();
+                this.Remove(INPUTSVG);
+
+                internalFilePath = "inputSVG.svg";
+                zipBag.Add(new ResourcePathInfo()
+                {
+                     internalPath = internalFilePath,
+                     externalPath = oldValue
+                });
+                this.configs[INPUTSVG] = internalFilePath;
+                //this.Set(INPUTSVG, internalFilePath);                
             }
 
-            return selfClone;
+            if (this.Has(CALLBACKS))
+            {
+                oldValue = this.Get(CALLBACKS).ToString();
+                this.Remove(CALLBACKS);
+
+                internalFilePath = "callbackFile.js";
+                zipBag.Add(new ResourcePathInfo()
+                {
+                    internalPath = internalFilePath,
+                    externalPath = oldValue
+                });
+
+                this.configs[CALLBACKS] = internalFilePath;
+            }
+
+            if (this.Has(DASHBOARDLOGO))
+            {
+                oldValue = this.Get(DASHBOARDLOGO).ToString();
+                this.Remove(DASHBOARDLOGO);
+                
+                var ext = new FileInfo(oldValue).Extension;
+                internalFilePath = string.Format("dashboardLogo{0}", ext.StartsWith(".")? ext: "." + ext);
+                zipBag.Add(new ResourcePathInfo()
+                {
+                    internalPath = internalFilePath,
+                    externalPath = oldValue
+                });
+
+                this.configs[DASHBOARDLOGO] = internalFilePath;
+            }
+
+            if (this.Has(OUTPUTFILEDEFINITION))
+            {
+                oldValue = this.Get(OUTPUTFILEDEFINITION).ToString();
+                this.Remove(OUTPUTFILEDEFINITION);
+
+                this.configs[OUTPUTFILEDEFINITION] = ReadFileContent(oldValue, encodeBase64: false);
+            }          
+
+            if (this.Has(TEMPLATE))
+            {
+                string templatePathWithinZip;
+                List<ResourcePathInfo> zipPaths;
+                this.createTemplateZipPaths(out zipPaths, out templatePathWithinZip);
+
+                this.configs[TEMPLATE] = templatePathWithinZip;
+
+                zipBag.AddRange(zipPaths);                
+            }
+
+            if (this.Has(ASYNCCAPTURE))
+            {
+                oldValue = this.Get(ASYNCCAPTURE).ToString();
+                this.Remove(ASYNCCAPTURE);
+
+                if (!string.IsNullOrEmpty(oldValue))
+                {
+                    if (Convert.ToBoolean(oldValue))
+                    {
+                        this.configs[ASYNCCAPTURE] = true;
+                    }
+                }
+            }
+
+            if (zipBag.Count > 0)
+            {
+                string zipFile = ExportConfig.generateZip(zipBag);
+                this.configs[PAYLOAD] = zipFile;
+            }
+            zipBag.Clear();
+
+            return this;
         }
 
-
-
-        private void CreateBase64ZippedTemplate(out string outZipContentBase64, out string outTemplatePathWithinZip)
+        private void createTemplateZipPaths(out List<ResourcePathInfo> outZipPaths, out string outTemplatePathWithinZip)
         {
-            var templateFilePath = (string)this.GetValueOrDefault(TEMPLATE, null);
-            var resourceFilePath = (string)this.GetValueOrDefault(RESOURCES, null);
+            string templateFilePath = this.Get(TEMPLATE).ToString();
 
-            if (!String.IsNullOrEmpty(templateFilePath))
+            // The template is a HTML body not file
+            if (templateFilePath.StartsWith("<"))
             {
-                // Expand templateFilePath
+                string tempTemplate = GetTempFileName();
+                File.WriteAllText(tempTemplate, templateFilePath);
+                templateFilePath = tempTemplate;
+                this.Set(TEMPLATE, templateFilePath);
+            }
+
+            List<string> listExtractedPaths = findResources();
+            List<string> listResourcePaths;
+            string baseDirectoryPath;
+            this.resolveResourceGlobFiles(out baseDirectoryPath, out listResourcePaths);
+
+
+            templateFilePath = Path.GetFullPath(templateFilePath);
+
+            if (baseDirectoryPath == null || string.IsNullOrEmpty(baseDirectoryPath))
+            {
+                var listExtractedPathsPlusTemplate = new List<string>();
+                listExtractedPathsPlusTemplate.AddRange(listExtractedPaths);
+                listExtractedPathsPlusTemplate.Add(templateFilePath);
+
+                var commonDirectoryPath = GetCommonAncestorDirectory(listExtractedPathsPlusTemplate.ToArray());
+
+                if (!string.IsNullOrEmpty(commonDirectoryPath))
+                {
+                    baseDirectoryPath = commonDirectoryPath;
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException("All the extracted resources and template might not be in the same drive");
+                }
+            }
+                        
+            // Filter listResourcePaths to those only which are within basePath
+            listResourcePaths = listResourcePaths.Where((tmpPath) => IsWithinPath(tmpPath, baseDirectoryPath)).ToList();
+            
+            // Make map relative version of extracted and resource file paths (compared to basepath) with original filepath
+            var mapExtractedPathAbsToRel = new Dictionary<string, string>();
+            foreach (var tmpPath in listExtractedPaths)
+            {
+                mapExtractedPathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
+            }
+
+            //var mapResourcePathAbsToRel = new Dictionary<string, string>();
+            foreach (var tmpPath in listResourcePaths)
+            {
+                mapExtractedPathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
+            }
+
+            var templateFilePathWithinZipRel = GetRelativePathFrom(templateFilePath, baseDirectoryPath);
+
+            mapExtractedPathAbsToRel.Add(templateFilePath, templateFilePathWithinZipRel);
+
+            List<ResourcePathInfo> zipPaths = generatePathForZip(mapExtractedPathAbsToRel, baseDirectoryPath);
+
+            foreach(var zipPath in zipPaths)
+            {
+                zipPath.internalPath = Path.Combine("template", zipPath.internalPath);
+            }
+
+            string templatePathWithinZip = Path.Combine(
+              "template",
+              GetRelativePathFrom(templateFilePath, baseDirectoryPath)
+            );
+
+            outZipPaths = zipPaths;
+            outTemplatePathWithinZip = templatePathWithinZip;
+            ///CreateBase64ZippedTemplate(out outZipPaths, out outTemplatePathWithinZip);
+        }
+
+        private List<string> findResources()
+        {
+            string templateFilePath = this.Get(TEMPLATE).ToString();
+            
+            if (!string.IsNullOrEmpty(templateFilePath))
+            {
+                string templateDirectory = Path.GetDirectoryName(templateFilePath);
                 templateFilePath = Path.GetFullPath(templateFilePath);
 
                 // Load templateFilePath content as html page
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.Load(templateFilePath);
-
-                // Create map of (filepath within zip folder) : (filepath of original file)
-                var listExtractedPaths = new List<string>();
+               
+                List<string> listExtractedPaths = new List<string>();
 
                 // Find all link, script, img tags with local URL from loaded html
                 var filteredLinkTags = EmptyListIfNull(htmlDoc.DocumentNode
@@ -393,156 +810,105 @@ namespace FusionCharts.FusionExport.Client
                     listExtractedPaths.Add(resolvedFilePath);
                 }
 
-                //// Put the modified template file + extracted resources from html + provided resource files in a temp folder
-                //var tempZipDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-
-                //{
-                //    // Write modified template file
-                //    var htmlContent = htmlDoc.DocumentNode.OuterHtml;
-                //    var templateWithinZipFullPath = Path.Combine(tempZipDirectoryPath, "template.html");
-
-                //    File.WriteAllText(templateWithinZipFullPath, htmlContent);
-                //}
-                //{
-                //    // Write extracted resources from html 
-                //    foreach (var eachMap in listExtractedPaths)
-                //    {
-                //        var originalFilePath = eachMap.Key;
-                //        var resourceWithinZipFullPath = GetFullPathWrtBasePath(eachMap.Value, tempZipDirectoryPath);
-
-                //        CopyFile(originalFilePath, resourceWithinZipFullPath);
-                //    }
-                //}
-
-                List<string> listResourcePaths = new List<string>();
-                string baseDirectoryPath = null;
-
-                if (!string.IsNullOrEmpty(resourceFilePath))
-                {
-                    // Resolve resource file full path
-                    resourceFilePath = Path.GetFullPath(resourceFilePath);
-                    // Get directory path, to be used for glob resolution
-                    var resourceDirectoryPath = Path.GetDirectoryName(resourceFilePath);
-
-                    // Load resourceFilePath content (JSON) as instance of Resources
-                    var resources = JsonConvert.DeserializeObject<ResourcesSchema>(File.ReadAllText(resourceFilePath));
-
-                    // Resolve include and exclude globs to find the final include list
-                    {
-                        var listResourceIncludePaths = new List<string>();
-                        var listResourceExcludePaths = new List<string>();
-
-                        var root = new DirectoryInfo(resourceDirectoryPath);
-
-                        foreach (var eachIncludePath in resources.include)
-                        {
-                            var matchedFiles = root.GlobFiles(eachIncludePath)
-                                .Select((fileInfo) => fileInfo.FullName)
-                                .ToList();
-                            listResourceIncludePaths.AddRange(matchedFiles);
-                        }
-
-                        foreach (var eachExcludePath in resources.exclude)
-                        {
-                            var matchedFiles = root.GlobFiles(eachExcludePath)
-                                .Select((fileInfo) => fileInfo.FullName)
-                                .ToList();
-                            listResourceExcludePaths.AddRange(matchedFiles);
-                        }
-
-                        listResourcePaths = listResourceIncludePaths.Except(listResourceExcludePaths).ToList();
-                    }
-
-                    baseDirectoryPath = resources.basePath;
-                }
-
-                // If basepath is not provided, find it from common ancestor directory of extracted file paths plus template
-                if (string.IsNullOrEmpty(baseDirectoryPath))
-                {
-                    var listExtractedPathsPlusTemplate = new List<string>();
-                    listExtractedPathsPlusTemplate.AddRange(listExtractedPaths);
-                    listExtractedPathsPlusTemplate.Add(templateFilePath);
-
-                    var commonDirectoryPath = GetCommonAncestorDirectory(listExtractedPathsPlusTemplate.ToArray());
-
-                    if (!string.IsNullOrEmpty(commonDirectoryPath))
-                    {
-                        baseDirectoryPath = commonDirectoryPath;
-                    }
-                    else
-                    {
-                        throw new DirectoryNotFoundException("All the extracted resources and template might not be in the same drive");
-                    }
-                }
-
-                // Filter listResourcePaths to those only which are within basePath
-                listResourcePaths = listResourcePaths
-                    .Where((tmpPath) => IsWithinPath(tmpPath, baseDirectoryPath))
-                    .ToList();
-
-                // Make map relative version of extracted and resource file paths (compared to basepath) with original filepath
-                var mapExtractedPathAbsToRel = new Dictionary<string, string>();
-                foreach (var tmpPath in listExtractedPaths)
-                {
-                    mapExtractedPathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
-                }
-
-                var mapResourcePathAbsToRel = new Dictionary<string, string>();
-                foreach (var tmpPath in listResourcePaths)
-                {
-                    mapResourcePathAbsToRel[tmpPath] = GetRelativePathFrom(tmpPath, baseDirectoryPath);
-                }
-
-                var templateFilePathWithinZipRel = GetRelativePathFrom(templateFilePath, baseDirectoryPath);
-
-                // Create zip temp folder
-                var tempZipDirectoryPath = GetTempFolderName();
-                var tempZipFilePath = GetTempFileName();
-
-                // Foreach extracted, resource, template file, create reqd. directory within zip folder and copy them
-                foreach (KeyValuePair<string, string> entry in mapExtractedPathAbsToRel)
-                {
-                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
-                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                    Directory.CreateDirectory(directoryWithinZipAbs);
-
-                    CopyFile(entry.Key, filePathWithinZipAbs);
-                }
-                foreach (KeyValuePair<string, string> entry in mapResourcePathAbsToRel)
-                {
-                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, entry.Value);
-                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                    Directory.CreateDirectory(directoryWithinZipAbs);
-                    CopyFile(entry.Key, filePathWithinZipAbs);
-                }
-
-                {
-                    var filePathWithinZipAbs = Path.Combine(tempZipDirectoryPath, templateFilePathWithinZipRel);
-                    var directoryWithinZipAbs = Path.GetDirectoryName(filePathWithinZipAbs);
-
-                    Directory.CreateDirectory(directoryWithinZipAbs);
-                    CopyFile(templateFilePath, filePathWithinZipAbs);
-                }
-
-                CreateZipFromDirectory(tempZipDirectoryPath, tempZipFilePath);
-
-                // Set this zip content to _templateZipBase64Content
-                outZipContentBase64 = ReadFileContent(tempZipFilePath, encodeBase64: true);
-                outTemplatePathWithinZip = templateFilePathWithinZipRel;
-
-                // Delete temp zip folder and temp zip file
-                Directory.Delete(tempZipDirectoryPath, true);
-                File.Delete(tempZipFilePath);
+                return listExtractedPaths;
             }
-            else
-            {
-                outZipContentBase64 = null;
-                outTemplatePathWithinZip = null;
-            }
+            return new List<string>();
         }
 
+        private void resolveResourceGlobFiles(out string outBaseDirectoryPath, out List<string> outListResourcePaths)
+        {            
+            string baseDirectoryPath = null;
+            List<string> listResourcePaths = new List<string>();
+            
+            if (!this.Has(RESOURCES))
+            {
+                outBaseDirectoryPath = baseDirectoryPath;
+                outListResourcePaths = listResourcePaths;
+                return;
+            }
 
+            string resourceFilePath = this.Get(RESOURCES).ToString();
+            resourceFilePath = Path.GetFullPath(resourceFilePath);
+
+            string resourceDirectoryPath = Path.GetDirectoryName(resourceFilePath);
+
+            // Load resourceFilePath content (JSON) as instance of Resources
+            var resources = JsonConvert.DeserializeObject<ResourcesSchema>(File.ReadAllText(resourceFilePath));
+
+            if (resources.include == null)
+                resources.include = new List<string>();
+
+            if (resources.exclude == null)
+                resources.exclude = new List<string>();
+            
+            // New attribute `resolvePath` - overloads actual direcotry location for glob resolve
+            if (resources.resolvePath != null)
+            {
+                resourceDirectoryPath = resources.resolvePath;
+            }
+
+            {
+                var listResourceIncludePaths = new List<string>();
+                var listResourceExcludePaths = new List<string>();
+
+                var root = new DirectoryInfo(resourceDirectoryPath);
+
+                /* eslint-disable no-restricted-syntax */
+                foreach (var eachIncludePath in resources.include)
+                {
+                    var matchedFiles = root.GlobFiles(eachIncludePath)
+                                .Select((fileInfo) => fileInfo.FullName)
+                                .ToList();
+                    listResourceIncludePaths.AddRange(matchedFiles);
+                }
+
+                foreach (var eachExcludePath in resources.exclude)
+                {
+                    var matchedFiles = root.GlobFiles(eachExcludePath)
+                                .Select((fileInfo) => fileInfo.FullName)
+                                .ToList();
+                    listResourceExcludePaths.AddRange(matchedFiles);                    
+                }
+                /* eslint-enable no-restricted-syntax */
+
+                listResourcePaths = listResourceIncludePaths.Except(listResourceExcludePaths).ToList();
+                baseDirectoryPath = resources.basePath;
+            }
+
+            outBaseDirectoryPath = baseDirectoryPath;
+            outListResourcePaths = listResourcePaths;
+        }
+
+        private List<ResourcePathInfo> generatePathForZip(Dictionary<string, string> listAllFilePaths, string baseDirectoryPath)
+        {
+            List<ResourcePathInfo> listFilePath = new List<ResourcePathInfo>();
+
+            foreach (KeyValuePair<string,string> filepath in listAllFilePaths)
+            {
+                string filePathWithinZip = GetRelativePathFrom(filepath.Key, baseDirectoryPath);
+                listFilePath.Add(new ResourcePathInfo()
+                {
+                     internalPath = filePathWithinZip,
+                     externalPath = GetAbsolutePathFrom(filepath.Key)
+                });
+            }
+            return listFilePath;
+        }
+
+        private static string generateZip(List<ResourcePathInfo> fileBag)
+        {
+            var tempZipFilePath = GetTempFileName();
+            using (ZipFile zip = new ZipFile())
+            {
+                foreach (var file in fileBag)
+                {
+                    string dirPath = file.internalPath.Replace(@"\.\", @"\");
+                    ZipEntry zipEntry  = zip.AddFile(file.externalPath);
+                    zipEntry.FileName = dirPath;
+                }
+                zip.Save(tempZipFilePath);
+            }
+            return tempZipFilePath;
+        }        
     }
 }

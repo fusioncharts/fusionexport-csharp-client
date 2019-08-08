@@ -6,7 +6,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class InjectJsCallback
+    public static class Header_Footer
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
@@ -19,7 +19,11 @@ namespace FusionExportTest
             {
                 exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
                 exportConfig.Set("templateFilePath", "./resources/template.html");
-                exportConfig.Set("callbackFilePath", "./resources/callback.js");
+                exportConfig.Set("type", "pdf");
+                exportConfig.Set("headerEnabled", "true");
+                exportConfig.Set("footerEnabled", "true");
+                exportConfig.Set("headerComponents", "{ \"title\": { \"style\": \"color:blue;\" } }");
+                exportConfig.Set("footerComponents", "{ \"pageNumber\": { \"style\": \"color:green;\" } }");
 
                 // Call the Export() method with the export config
                 results.AddRange(exportManager.Export(exportConfig));

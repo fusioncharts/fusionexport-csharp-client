@@ -1,4 +1,0 @@
-C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExport\bin\Release\FusionExport.dll
-C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExport\bin\Release\FusionExport.pdb
-C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExport\obj\Release\FusionExport.dll
-C:\Users\implementation\Documents\Visual Studio 2017\Projects\fusionexport-csharp-client\FusionExport\obj\Release\FusionExport.pdb

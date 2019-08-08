@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FusionCharts.FusionExport.Client; // Import sdk
@@ -11,32 +12,56 @@ namespace FusionExportTest
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            exportConfig.Set("chartConfig", File.ReadAllText("./resources/chart-config-file.json"));
+            List<string> results = new List<string>();
+
+            string chartConfig = @"{
+                        ""type"": ""column2d"",
+                        ""renderAt"": ""chart-container"",
+                        ""width"": ""600"",
+                        ""height"": ""400"",
+                        ""dataFormat"": ""json"",
+                        ""dataSource"": {
+                            ""chart"": {
+                                ""caption"": ""Number of visitors last week"",
+                                ""subCaption"": ""Bakersfield Central vs Los Angeles Topanga""
+                            },
+                            ""data"": [{
+                                    ""label"": ""Mon"",
+                                    ""value"": ""15123""
+                                },{
+                                    ""label"": ""Tue"",
+                                    ""value"": ""14233""
+                                },{
+                                    ""label"": ""Wed"",
+                                    ""value"": ""25507""
+                                }
+                            ]
+                        }
+                    }";
+
+            string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\dashboard_charts.json";
+            string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\template.html";
 
             // Instantiate the ExportManager class
-            ExportManager em = new ExportManager(host: host, port: port);
-            // Call the Export() method with the export config and the respective callbacks
-            em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+            using (ExportManager exportManager = new ExportManager())
+            {
+                exportConfig.Set("chartConfig", chartConfigFile);
+                exportConfig.Set("templateFilePath", templateFilePath);
+                exportConfig.Set("templateFormat", "letter");
+                exportConfig.Set("type", "pdf");
+                // Call the Export() method with the export config
+                //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));
+                results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true));
+            }
+
+            foreach (string path in results)
+            {
+                Console.WriteLine(path);
+            }
+
+            Console.Read();
+
         }
 
-        // Called when export is done
-        static void OnExportDone(ExportEvent ev, ExportException error)
-        {
-            if (error != null)
-            {
-                Console.WriteLine("Error: " + error);
-            }
-            else
-            {
-                var fileNames = ExportManager.GetExportedFileNames(ev.exportedFiles);
-                Console.WriteLine("Done: " + String.Join(", ", fileNames)); // export result
-            }
-        }
-
-        // Called on each export state change
-        static void OnExportStateChanged(ExportEvent ev)
-        {
-            Console.WriteLine("State: " + ev.state.customMsg);
-        }
     }
 }
