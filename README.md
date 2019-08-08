@@ -4,19 +4,56 @@ Language SDK for FusionExport which enables exporting of charts & dashboards thr
 
 ## Prerequisites
 
-.NET Framework version >= 3.5
+.NET Framework version >= 4.0
 
 ## Installation
 
 You can install the SDK using the `NuGet` package manager. To install, open the NuGet package manager console and run the following command:
 
 ```sh
-$ Install-Package FusionExport
+$ Install-Package FusionExport -Version 1.0.0-rc0
 ```
 
 ## Getting Started
 
-Start with a simple chart export. For exporting a single chart just pass the chart configuration as you would have passed it to the FusionCharts constructor.
+After installing the SDK in your `.NET` project, create a new file named `chart-config.json`, 
+which will contain the chart configurations to be exported. Before exporting your chart, make sure the export server is running.
+
+The `chart-config.json` file:
+
+```json
+[
+  {
+    "type": "column2d",
+    "renderAt": "chart-container",
+    "width": "600",
+    "height": "200",
+    "dataFormat": "json",
+    "dataSource": {
+      "chart": {
+        "caption": "Number of visitors last week",
+        "subCaption": "Bakersfield Central vs Los Angeles Topanga"
+      },
+      "data": [
+        {
+          "label": "Mon",
+          "value": "15123"
+        },
+        {
+          "label": "Tue",
+          "value": "14233"
+        },
+        {
+          "label": "Wed",
+          "value": "25507"
+        }
+      ]
+    }
+  }
+]
+```
+
+Now import the SDK library into your project and write the export logic in your project as given below:
 
 ```csharp
 using System;
@@ -32,53 +69,38 @@ namespace FusionExportTest
         {
             // Instantiate the ExportConfig class and add the required configurations
             ExportConfig exportConfig = new ExportConfig();
-            List<string> results = new List<string>();
-
-            string chartConfig = @"{
-                        ""type"": ""column2d"",
-                        ""renderAt"": ""chart-container"",
-                        ""width"": ""600"",
-                        ""height"": ""400"",
-                        ""dataFormat"": ""json"",
-                        ""dataSource"": {
-                            ""chart"": {
-                                ""caption"": ""Number of visitors last week"",
-                                ""subCaption"": ""Bakersfield Central vs Los Angeles Topanga""
-                            },
-                            ""data"": [{
-                                    ""label"": ""Mon"",
-                                    ""value"": ""15123""
-                                },{
-                                    ""label"": ""Tue"",
-                                    ""value"": ""14233""
-                                },{
-                                    ""label"": ""Wed"",
-                                    ""value"": ""25507""
-                                }
-                            ]
-                        }
-                    }";
+            exportConfig.Set("chartConfig", File.ReadAllText("fullpath/of/chart-config-file.json"));
 
             // Instantiate the ExportManager class
-            using (ExportManager exportManager = new ExportManager())
+            ExportManager em = new ExportManager(host: host, port: port);
+            // Call the Export() method with the export config and the respective callbacks
+            em.Export(exportConfig, OnExportDone, OnExportStateChanged);
+        }
+
+        // Called when export is done
+        static void OnExportDone(ExportEvent ev, ExportException error)
+        {
+            if (error != null)
             {
-                exportConfig.Set("chartConfig", chartConfig);
-
-                // Call the Export() method with the export config
-                results.AddRange(exportManager.Export(exportConfig, ".\\exported-charts", true));
+                Console.WriteLine("Error: " + error);
             }
-
-            foreach (string path in results)
+            else
             {
-                Console.WriteLine(path);
+                var fileNames = ExportManager.GetExportedFileNames(ev.exportedFiles);
+                Console.WriteLine("Done: " + String.Join(", ", fileNames)); // export result
             }
+        }
 
-            Console.Read();
+        // Called on each export state change
+        static void OnExportStateChanged(ExportEvent ev)
+        {
+            Console.WriteLine("State: " + ev.state.customMsg);
+        }
     }
 }
 ```
 
-Finally, run your .NET app. The exported chart will be saved in ./exported-charts folder.
+Finally, run your .NET app. The exported chart will be received when the `ExportDone` event is triggered .
 
 ## API Reference
 

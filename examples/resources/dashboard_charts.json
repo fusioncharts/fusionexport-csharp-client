@@ -1,4 +1,5 @@
-[{
+[
+    {
 		"type": "pie2d",
 		"renderAt": "pie_chart",
 		"width": "500",
@@ -22,7 +23,7 @@
 					"label": "Wed",
 					"value": "22800"
 				}
-			]			
+			]
 		}
 	},
 	{
