@@ -11,7 +11,8 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            Header_Footer.Run();
+            //SendEmail.Run();
+            //Header_Footer.Run();
             //ExportSingleChart.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
@@ -19,7 +20,7 @@ namespace examples
             //Chartjs_Exp.Run();
             //ConvertSvg.Run();
             //D3_Exp.Run();
-            //Dashboard.Run();
+            Dashboard.Run();
             //DashboardLogoHead.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();
