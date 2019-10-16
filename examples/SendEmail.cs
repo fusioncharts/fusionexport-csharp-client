@@ -1,12 +1,14 @@
 ﻿/* Send FusionExport files as attachments via mail
-
+ * 
  * Sending email using System.Net.Mail
-
- * Provide your SMTP details for settiing up (line no. 42 & 43).
-
+ * 
+ * Provide your SMTP details for setting up (line no. 44 & 45)
+ * 
+ * Provide your SMTP credential (line no. 46).
+ * 
  * This sample was tested using Gmail SMTP configuration
-
- * Finally, provide email metadata (details like subject, to, from) while sending email (line no. 47 to 50).
+ * 
+ * Finally, provide email metadata (details like subject, to, from) while sending email (line no. 49).
  */
 
 using System;
@@ -41,7 +43,7 @@ namespace examples
                 MailMessage mail = new MailMessage();
                 SmtpClient SmtpServer = new SmtpClient("smtp.gmaill.com");
                 SmtpServer.Port = 587;
-                SmtpServer.Credentials = new System.Net.NetworkCredential("rahul@fusioncharts.com", "R@hul@2018#");
+                SmtpServer.Credentials = new System.Net.NetworkCredential("<USERNAME>", "<PASSWORD>");
                 SmtpServer.EnableSsl = true;
 
                 mail.From = new MailAddress("<SENDER'S EMAIL>");
