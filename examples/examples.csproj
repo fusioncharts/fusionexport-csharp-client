@@ -60,6 +60,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quality.cs" />
+    <Compile Include="SendEmail.cs" />
     <Compile Include="ZingChart_Exp.cs" />
   </ItemGroup>
   <ItemGroup>
