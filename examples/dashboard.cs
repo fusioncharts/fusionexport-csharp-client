@@ -19,6 +19,8 @@ namespace FusionExportTest
             {
                 exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
                 exportConfig.Set("templateFilePath", "./resources/template.html");
+                exportConfig.Set("type", "pdf");
+                //exportConfig.Set("templateFormat", "A4");
 
                 // Call the Export() method with the export config
                 results.AddRange(exportManager.Export(exportConfig));
