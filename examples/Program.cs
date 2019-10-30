@@ -20,7 +20,8 @@ namespace examples
             //Chartjs_Exp.Run();
             //ConvertSvg.Run();
             //D3_Exp.Run();
-            Dashboard.Run();
+            //Dashboard.Run();
+            ExportAsStream.Run();
             //DashboardLogoHead.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();

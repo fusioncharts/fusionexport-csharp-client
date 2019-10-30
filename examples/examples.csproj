@@ -32,8 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ionic.Zip.1.9.1.8\lib\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,8 +53,9 @@
     <Compile Include="Chartjs_Exp.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
-    <Compile Include="Header_Footer.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="ExportAsStream.cs" />
+    <Compile Include="Header_Footer.cs" />
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />
     <Compile Include="GoogleCharts_Exp.cs" />
@@ -65,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
     <None Include="resources\bulk.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

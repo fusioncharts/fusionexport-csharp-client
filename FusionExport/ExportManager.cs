@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FusionCharts.FusionExport.Client
 {
-    public class ExportManager: IDisposable
+    public class ExportManager : IDisposable
     {
         private string host;
         private int port;
@@ -66,7 +66,7 @@ namespace FusionCharts.FusionExport.Client
                 GC.WaitForPendingFinalizers();
             }
         }
-        
+
         public string Host
         {
             get { return host; }
@@ -92,28 +92,75 @@ namespace FusionCharts.FusionExport.Client
 
         public List<string> Export(ExportConfig exportConfig)
         {
-            return ExportChart(exportConfig);
+            return (List<string>)ExportChart(exportConfig);
         }
 
         public List<string> Export(ExportConfig exportConfig, string outputDir)
         {
-            return ExportChart(exportConfig, outputDir, true);
+            return (List<string>)ExportChart(exportConfig, outputDir, true);
         }
 
         public List<string> Export(ExportConfig exportConfig, bool unzip)
         {
-            return ExportChart(exportConfig, null, unzip);
+            return (List<string>)ExportChart(exportConfig, null, unzip);
         }
 
         public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
         {
-            return ExportChart(exportConfig, outputDir, unzip);
+            return (List<string>)ExportChart(exportConfig, outputDir, unzip);
         }
 
-        private List<string> ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true)
+
+        public Dictionary<string, Stream> ExportAsStream(ExportConfig exportConfig)
+        {
+            MemoryStream ms =(MemoryStream)ExportChart(exportConfig, "", false, true);
+
+            Dictionary<string, Stream> files = new Dictionary<string, Stream>();
+
+            using (Ionic.Zip.ZipFile z = Ionic.Zip.ZipFile.Read(ms))
+            {
+                foreach (Ionic.Zip.ZipEntry zEntry in z)
+                {
+                    MemoryStream tempS = new MemoryStream();
+                    zEntry.Extract(tempS);
+                    tempS.Seek(0, SeekOrigin.Begin);
+                    files.Add(zEntry.FileName, tempS);
+                }
+            }
+
+            return files;
+        }
+
+        public MemoryStream ExportAsStream(ExportConfig exportConfig, string outputDir)
+        {
+            return (MemoryStream)ExportChart(exportConfig, outputDir, true);
+        }
+
+        public MemoryStream ExportAsStream(ExportConfig exportConfig, bool unzip)
+        {
+            return (MemoryStream)ExportChart(exportConfig, null, unzip);
+        }
+
+        public MemoryStream ExportAsStream(ExportConfig exportConfig, string outputDir, bool unzip)
+        {
+            return (MemoryStream)ExportChart(exportConfig, outputDir, unzip);
+        }
+
+        private object ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true, bool ExportAsStream = false)
         {
             exporter.ExportConfig = exportConfig;
-            string zipPath = exporter.Start();
+            string zipPath = string.Empty;
+            MemoryStream ms = null;
+
+            if (!ExportAsStream)
+            {
+                zipPath = exporter.Start();
+            }
+            else
+            {
+                ms = exporter.AsStream();
+                return ms;
+            }
 
             if (string.IsNullOrEmpty(outputDir))
             {
@@ -135,9 +182,9 @@ namespace FusionCharts.FusionExport.Client
                 return new List<string>(new string[] { fileFullName });
             }
             else
-            {                
+            {
                 return Utils.Utils.ExtractZipInDirectory(zipPath, outputDir);
             }
-        }        
+        }
     }
 }

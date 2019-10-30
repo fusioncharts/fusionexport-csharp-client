@@ -7,7 +7,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class Dashboard
+    public static class ExportAsStream
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {
@@ -21,13 +21,9 @@ namespace FusionExportTest
                 exportConfig.Set("chartConfig", File.ReadAllText("./resources/dashboard_charts.json"));
                 exportConfig.Set("templateFilePath", "./resources/template.html");
                 exportConfig.Set("type", "pdf");
-                //exportConfig.Set("templateFormat", "A4");
 
                 // Call the Export() method with the export config
-                //results.AddRange(exportManager.Export(exportConfig));
                 Dictionary<string, Stream> files = exportManager.ExportAsStream(exportConfig);
-
-
             }
 
             foreach (string path in results)
