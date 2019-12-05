@@ -55,6 +55,7 @@
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
     <Compile Include="ExportAsStream.cs" />
+    <Compile Include="ExportMultipleCharts.cs" />
     <Compile Include="Header_Footer.cs" />
     <Compile Include="DashboardLogoHead.cs" />
     <Compile Include="ExportSingleChart.cs" />

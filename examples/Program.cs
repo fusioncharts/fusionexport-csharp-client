@@ -21,7 +21,8 @@ namespace examples
             //ConvertSvg.Run();
             //D3_Exp.Run();
             //Dashboard.Run();
-            ExportAsStream.Run();
+            //ExportAsStream.Run();
+            ExportMultipleCharts.Run();
             //DashboardLogoHead.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();
