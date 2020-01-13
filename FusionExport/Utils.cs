@@ -235,7 +235,9 @@ namespace FusionCharts.FusionExport.Utils
                         if (!entry.IsDirectory)
                         {
                             string filePath = Path.Combine(destinationZipFolder, entry.FileName.ToString());
-                            files.Add(Path.GetFullPath(filePath));
+                            //files.Add(Path.Combine(filePath.ToAbsoluteFilePath().FileInfo.FullName));
+                            files.Add(Path.GetFullPath((new Uri(filePath)).LocalPath));
+                            //files.Add(Path.GetFullPath(filePath));
                         }
                     }
                 }

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 namespace FusionCharts.FusionExport.Client
 {
@@ -65,7 +66,12 @@ namespace FusionCharts.FusionExport.Client
 
         public string Start()
         {
-            return HandleHttpConnection();
+            return HandleHttpConnection().ToString();
+        }
+
+        public MemoryStream AsStream()
+        {
+            return (MemoryStream)HandleHttpConnection(true);
         }
 
         public void Cancel()
@@ -85,11 +91,16 @@ namespace FusionCharts.FusionExport.Client
             catch (Exception) { }
         }
 
-        private string HandleHttpConnection()
+        private object HandleHttpConnection()
+        {
+            return HandleHttpConnection(false);
+        }
+        private object HandleHttpConnection(bool ExportAsStream = false)
         {
             try
             {
                 string tempZipFilePath = string.Empty;
+                System.IO.MemoryStream ms = new System.IO.MemoryStream();
 
                 using (MultipartFormDataContent multipartFormData = this.exportConfig.GetFormattedConfigs())
                 {
@@ -109,19 +120,26 @@ namespace FusionCharts.FusionExport.Client
                                         tempZipFilePath = System.IO.Path.Combine(Utils.Utils.GetTempFolderName(true), fName);
                                         using (var fileStream = System.IO.File.Create(tempZipFilePath))
                                         {
-                                            respMessage.Content.ReadAsStreamAsync().Wait();
-                                            fileStream.SetLength((long)respMessage.Content.Headers.ContentLength);
-                                            respMessage.Content.CopyToAsync(fileStream).Wait();
-                                            fileStream.Flush();
-                                            fileStream.Close();
+                                            if (ExportAsStream)
+                                            {
+                                                respMessage.Content.ReadAsStreamAsync().Wait();
+                                                respMessage.Content.CopyToAsync(ms).Wait();
+                                                ms.Seek(0, SeekOrigin.Begin);
+                                            }
+                                            else
+                                            {
+                                                respMessage.Content.ReadAsStreamAsync().Wait();
+                                                fileStream.SetLength((long)respMessage.Content.Headers.ContentLength);
+                                                respMessage.Content.CopyToAsync(fileStream).Wait();
+                                                fileStream.Flush();
+                                                fileStream.Close();
+                                            }
                                         }
                                     }
                                     else
                                     {
                                         Task<string> responseText = respMessage.Content.ReadAsStringAsync();
-                                        var json = Newtonsoft.Json.JsonConvert.DeserializeObject(responseText.Result);
-                                        string errorStr = ((Newtonsoft.Json.Linq.JObject)json).GetValue("error").ToString();
-                                        throw new FusionExportHttpException("Server Error - " + errorStr);
+                                        throw new FusionExportHttpException("Server Error - " + responseText.Result);
                                     }
                                 }
                                 antecedent.Dispose();
@@ -138,7 +156,14 @@ namespace FusionCharts.FusionExport.Client
                     }
                 }
 
-                return tempZipFilePath;
+                if (ExportAsStream)
+                {
+                    return ms;
+                }
+                else
+                {
+                    return tempZipFilePath;
+                }
             }
             catch (Exception exception)
             {
