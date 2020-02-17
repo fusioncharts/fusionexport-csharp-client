@@ -73,6 +73,7 @@
     <Compile Include="OutputAsZip.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeSeries.cs" />
     <Compile Include="Quality.cs" />
     <Compile Include="SendEmail.cs" />
     <Compile Include="ZingChart_Exp.cs" />
@@ -92,6 +93,9 @@
     <None Include="resources\scrollchart.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Content Include="resources\timeseries-config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FusionExport\FusionExport.csproj">

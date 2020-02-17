@@ -11,6 +11,8 @@ namespace examples
     {
         static void Main(string[] args)
         {
+            TimeSeries.Run();
+
             //SendEmail.Run();
             //Header_Footer.Run();
             //ExportSingleChart.Run();
@@ -22,7 +24,7 @@ namespace examples
             //D3_Exp.Run();
             //Dashboard.Run();
             //ExportAsStream.Run();
-            ExportMultipleCharts.Run();
+            //ExportMultipleCharts.Run();
             //DashboardLogoHead.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();
