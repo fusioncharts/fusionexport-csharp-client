@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using static FusionCharts.FusionExport.Utils.Utils;
+using System.Text.RegularExpressions;
 
 
 namespace FusionCharts.FusionExport.Client
@@ -236,6 +237,7 @@ namespace FusionCharts.FusionExport.Client
                 {
                     if (!File.Exists(valueStr))
                     {
+
                         throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: chartConfig ---> chartConfig [URL] not found. Please provide an appropriate path."));
                     }
                     
@@ -784,14 +786,49 @@ namespace FusionCharts.FusionExport.Client
                     .SelectNodes("//img"))
                     .Where((imageTag) => imageTag.HasAttributes && imageTag.Attributes["src"] != null && isLocalResource(imageTag.Attributes["src"].Value));
 
+                string html = System.IO.File.ReadAllText(templateFilePath);
+
+                MatchCollection htmlFontFaces = Regex.Matches(html, @"@font-face\s*{([\s\S]*?)}", RegexOptions.Multiline);
+
+                foreach (var htmlFontFace in htmlFontFaces)
+                {
+                    string htmlFontFaceString = htmlFontFace.ToString();
+                    MatchCollection htmlFontURLs = Regex.Matches(htmlFontFaceString.ToString(), @"url\(""(.*?)""\)", RegexOptions.Multiline);
+
+                    foreach (var htmlFontURL in htmlFontURLs)
+                    {
+                        string htmlFontURLString = htmlFontURL.ToString();
+                        string htmlFontFilePath = htmlFontURLString.Substring(5, htmlFontURLString.Length - 7);
+                        var resolvedHtmlFontPath = GetFullPathWrtBasePath(htmlFontFilePath, Path.GetDirectoryName(templateFilePath));
+                        listExtractedPaths.Add(resolvedHtmlFontPath);
+                    }
+                }
+
                 // Fot these filtered link, script, img tags - map their full resolved filepath to a tempfilename 
                 // which will be used within zip and change the URLs (within html) to this tempfilename.
                 foreach (var linkTag in filteredLinkTags)
                 {
                     var originalFilePath = linkTag.Attributes["href"].Value;
-
                     var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
                     listExtractedPaths.Add(resolvedFilePath);
+                    string css = System.IO.File.ReadAllText(resolvedFilePath);
+                    
+                    MatchCollection fontFaces = Regex.Matches(css, @"@font-face\s*{([\s\S]*?)}", RegexOptions.Multiline);
+
+                    foreach (var fontFace in fontFaces)
+                    {
+                        string fontFaceString = fontFace.ToString();
+                        MatchCollection fontURLs = Regex.Matches(fontFaceString.ToString(), @"url\(""(.*?)""\)", RegexOptions.Multiline);
+                        
+                        foreach (var fontURL in fontURLs)
+                        {
+                            string fontURLString = fontURL.ToString();
+                            string fontFilePath = fontURLString.Substring(5, fontURLString.Length - 7);
+                            var resolvedFontPath = GetFullPathWrtBasePath(fontFilePath, Path.GetDirectoryName(resolvedFilePath));
+                            listExtractedPaths.Add(resolvedFontPath);
+                        }
+                    }
+
                 }
 
                 foreach (var scriptTag in filteredScriptTags)
@@ -809,7 +846,6 @@ namespace FusionCharts.FusionExport.Client
                     var resolvedFilePath = GetFullPathWrtBasePath(originalFilePath, Path.GetDirectoryName(templateFilePath));
                     listExtractedPaths.Add(resolvedFilePath);
                 }
-
                 return listExtractedPaths;
             }
             return new List<string>();

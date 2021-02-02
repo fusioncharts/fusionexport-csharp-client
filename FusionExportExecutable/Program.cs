@@ -13,10 +13,10 @@ namespace FusionExportExecutable
             try
             {
                 List<string> results = new List<string>();
-                string chartConfigFile = "./static/chart-config.json";
-                string svgFile = "./static/sample.svg";
-                string resourcesFile = "./static/resources.json";
-                string templateFile = "./static/html/template.html";
+                string chartConfigFile = "./static/test/chart-config-file.json";
+                // string svgFile = "./static/sample.svg";
+                // string resourcesFile = "./static/resources.json";
+                string templateFile = "./static/test/dashboard-template.html";
 
                 ExportConfig exportConfig = new ExportConfig();
 
