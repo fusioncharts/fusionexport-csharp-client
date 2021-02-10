@@ -48,7 +48,10 @@ namespace FusionExportTest
                 exportConfig.Set("chartConfig", chartConfigFile);
                 exportConfig.Set("templateFilePath", templateFilePath);
                 exportConfig.Set("templateFormat", "letter");
-                exportConfig.Set("type", "pdf");
+                exportConfig.Set("header", "yugyitfty");
+                exportConfig.Set("subheader", "Rishav");
+
+
                 // Call the Export() method with the export config
                 //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));
                 results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true));

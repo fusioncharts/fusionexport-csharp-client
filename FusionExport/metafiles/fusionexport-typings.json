@@ -134,5 +134,17 @@
   "footerComponents": {
     "type": "string",
     "supportedTypes": [ "string" ]
+  },
+  "exportBulk":{
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+    "header":{
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+    "subheader":{
+    "type": "string",
+    "supportedTypes": [ "string" ]
   }
 }

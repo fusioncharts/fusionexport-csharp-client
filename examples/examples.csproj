@@ -62,6 +62,7 @@
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="Default.cs" />
     <Compile Include="ExportAsStream.cs" />
     <Compile Include="ExportMultipleCharts.cs" />
     <Compile Include="Header_Footer.cs" />

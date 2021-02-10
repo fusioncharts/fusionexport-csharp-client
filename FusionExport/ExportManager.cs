@@ -90,6 +90,31 @@ namespace FusionCharts.FusionExport.Client
             return Base64Data;
         }
 
+        public string ExportBulkParameterHandler(string exportBulk)
+        {
+            if (exportBulk == "true" || exportBulk == "True")
+            {
+                return "true";
+            }
+            else if (exportBulk == "false" || exportBulk == "False")
+            {
+                return "false";
+            }
+            else if (exportBulk == "1")
+            {
+                return "true";
+            }
+            else if (exportBulk == "0")
+            {
+                return "false";
+            }
+            else
+            {
+                return "false";
+            }
+
+        }
+
         public List<string> Export(ExportConfig exportConfig)
         {
             return (List<string>)ExportChart(exportConfig);
@@ -105,15 +130,16 @@ namespace FusionCharts.FusionExport.Client
             return (List<string>)ExportChart(exportConfig, null, unzip);
         }
 
-        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
+        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip, string exportBulk = "false")
         {
-            return (List<string>)ExportChart(exportConfig, outputDir, unzip);
+            exportConfig.Set("exportBulk", exportBulk);
+            exportBulk = this.ExportBulkParameterHandler(exportBulk);
+            return (List<string>)ExportChart(exportConfig, outputDir, unzip, exportBulk: exportBulk);
         }
-
 
         public Dictionary<string, Stream> ExportAsStream(ExportConfig exportConfig)
         {
-            MemoryStream ms =(MemoryStream)ExportChart(exportConfig, "", false, true);
+            MemoryStream ms = (MemoryStream)ExportChart(exportConfig, "", false, true);
 
             Dictionary<string, Stream> files = new Dictionary<string, Stream>();
 
@@ -146,7 +172,7 @@ namespace FusionCharts.FusionExport.Client
             return (MemoryStream)ExportChart(exportConfig, outputDir, unzip);
         }
 
-        private object ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true, bool ExportAsStream = false)
+        private object ExportChart(ExportConfig exportConfig, string outputDir = "", bool unzip = true, bool ExportAsStream = false, string exportBulk = "false")
         {
             exporter.ExportConfig = exportConfig;
             string zipPath = string.Empty;

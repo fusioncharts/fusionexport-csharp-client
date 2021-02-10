@@ -11,11 +11,12 @@ namespace examples
     {
         static void Main(string[] args)
         {
-            TimeSeries.Run();
+            //TimeSeries.Run();
 
             //SendEmail.Run();
             //Header_Footer.Run();
             //ExportSingleChart.Run();
+            Default.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
