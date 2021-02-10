@@ -13,28 +13,72 @@ namespace FusionCharts.FusionExport.Client
         private ExportConfig exportConfig;
         private string exportServerHost = Constants.DEFAULT_HOST;
         private int exportServerPort = Constants.DEFAULT_PORT;
+        private Boolean exportServerIsSecure = Constants.DEFAULT_ISSECURE;
+        private String exportServerProtocol = Constants.UNSECURED_PROTOCOL;
         private HttpClient httpClient;
         private string requestUri;
 
-        public Exporter(string exportServerHost, int exportServerPort)
+        public Exporter(string exportServerHost, int exportServerPort, Boolean exportServerIsSecure)
         {
             this.exportServerHost = exportServerHost;
             this.exportServerPort = exportServerPort;
+            this.exportServerIsSecure = exportServerIsSecure;
+            if (this.exportServerIsSecure) {
+                this.setExportServerProtocol(Constants.SECURED_PROTOCOL);
+            }else
+            {
+                this.setExportServerProtocol(Constants.UNSECURED_PROTOCOL);
+            }
 
             // Create full http url path. This looks like `http://127.0.0.1:2020/a/b`,
             // Currently, we join host and port using `:` (naive solution) to get this string.
             //
             // TODO: Ideally, we should parse hostname and put port number just after ip address or host provided.
-            this.requestUri = string.Format("{0}:{1}/api/v2.0/export",
+
+            this.requestUri = string.Format("{0}://{1}:{2}/api/v2.0/export",
+                this.exportServerProtocol,
                 this.exportServerHost,
                 this.exportServerPort.ToString());
-
-
+                      
             // Create a new http client object
             this.httpClient = new HttpClient();
+            
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)(0xc0 | 0x300 | 0xc00);
+            ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback
+            (
+            delegate { return true; }
+            );
+
             httpClient.BaseAddress = new Uri(this.requestUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
 
+            if (this.exportServerIsSecure)
+            {
+                try
+                {
+                    using (Task<HttpResponseMessage> task = httpClient.GetAsync(this.requestUri))
+                    {
+                        task.Wait();
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("HTTPS server not found, overriding requests to an HTTP server");
+                    this.setExportServerProtocol(Constants.UNSECURED_PROTOCOL);
+                    this.requestUri = string.Format("{0}://{1}:{2}/api/v2.0/export",
+                    this.exportServerProtocol,
+                    this.exportServerHost,
+                    this.exportServerPort.ToString());
+                    this.httpClient = new HttpClient();
+                    httpClient.BaseAddress = new Uri(this.requestUri);
+                    httpClient.DefaultRequestHeaders.Accept.Clear();
+                }
+            }
+        }
+
+        public void setExportServerProtocol(String protocol)
+        {
+            this.exportServerProtocol = protocol;
         }
 
         public void Dispose()
@@ -171,9 +215,10 @@ namespace FusionCharts.FusionExport.Client
                 {
                     foreach (var e in ((AggregateException)exception).Flatten().InnerExceptions)
                     {
+                        Console.WriteLine(e.StackTrace);
                         if (e is HttpRequestException)
                         {
-                            throw new FusionExportHttpException(string.Format("Connection Refused:\nUnable to connect to FusionExport server. Make sure that your server is running on {0}:{1}", this.ExportServerHost, this.ExportServerPort));
+                            throw new FusionExportHttpException(string.Format("Connection Refused:\nUnable to connect to FusionExport server. Make sure that your server is running on {0}://{1}:{2}", this.exportServerProtocol, this.ExportServerHost, this.ExportServerPort));
                         }
                         else
                         {

@@ -10,20 +10,23 @@ namespace FusionCharts.FusionExport.Client
     {
         private string host;
         private int port;
+        private Boolean isSecure;
         private Exporter exporter = null;
 
         public ExportManager()
         {
             this.host = Constants.DEFAULT_HOST;
             this.port = Constants.DEFAULT_PORT;
-            exporter = new Exporter(this.host, this.port);
+            this.isSecure = Constants.DEFAULT_ISSECURE;
+            exporter = new Exporter(this.host, this.port, this.isSecure);
         }
 
-        public ExportManager(string host, int port)
+        public ExportManager(string host, int port, Boolean isSecure)
         {
             this.host = host;
             this.port = port;
-            exporter = new Exporter(this.host, this.port);
+            this.isSecure = isSecure;
+            exporter = new Exporter(this.host, this.port, this.isSecure);
         }
 
         ~ExportManager()
