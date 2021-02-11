@@ -1,0 +1,11 @@
+﻿For External font support example
+Open program.cs file 
+- Provide the path of chart-config-file.json in export config attribute chartConfig.
+- Provide the path of dashboard-template.html in export config attribute templateFilePath.
+
+Now run to test.
+
+
+
+For Excel related example
+Copy the main function from static/test.cs file and replace it in Program.cs
