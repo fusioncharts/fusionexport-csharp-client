@@ -793,14 +793,17 @@ namespace FusionCharts.FusionExport.Client
                 foreach (var htmlFontFace in htmlFontFaces)
                 {
                     string htmlFontFaceString = htmlFontFace.ToString();
-                    MatchCollection htmlFontURLs = Regex.Matches(htmlFontFaceString.ToString(), @"url\(""(.*?)""\)", RegexOptions.Multiline);
-
+                    MatchCollection htmlFontURLs = Regex.Matches(htmlFontFaceString.ToString(), @"url\((.*?)\)", RegexOptions.Multiline);
                     foreach (var htmlFontURL in htmlFontURLs)
                     {
                         string htmlFontURLString = htmlFontURL.ToString();
-                        string htmlFontFilePath = htmlFontURLString.Substring(5, htmlFontURLString.Length - 7);
-                        var resolvedHtmlFontPath = GetFullPathWrtBasePath(htmlFontFilePath, Path.GetDirectoryName(templateFilePath));
-                        listExtractedPaths.Add(resolvedHtmlFontPath);
+                        string htmlFontFilePath = htmlFontURLString.Substring(4, htmlFontURLString.Length - 5);
+                        string sanitizedPath = htmlFontFilePath.Replace("\"", string.Empty).Replace("'", string.Empty);
+                        if (sanitizedPath != string.Empty)
+                        {
+                            var resolvedHtmlFontPath = GetFullPathWrtBasePath(sanitizedPath, Path.GetDirectoryName(templateFilePath));
+                            listExtractedPaths.Add(resolvedHtmlFontPath);
+                        }
                     }
                 }
 
@@ -818,14 +821,18 @@ namespace FusionCharts.FusionExport.Client
                     foreach (var fontFace in fontFaces)
                     {
                         string fontFaceString = fontFace.ToString();
-                        MatchCollection fontURLs = Regex.Matches(fontFaceString.ToString(), @"url\(""(.*?)""\)", RegexOptions.Multiline);
+                        MatchCollection fontURLs = Regex.Matches(fontFaceString.ToString(), @"url\((.*?)\)", RegexOptions.Multiline);
                         
                         foreach (var fontURL in fontURLs)
                         {
                             string fontURLString = fontURL.ToString();
-                            string fontFilePath = fontURLString.Substring(5, fontURLString.Length - 7);
-                            var resolvedFontPath = GetFullPathWrtBasePath(fontFilePath, Path.GetDirectoryName(resolvedFilePath));
-                            listExtractedPaths.Add(resolvedFontPath);
+                            string fontFilePath = fontURLString.Substring(4, fontURLString.Length - 5);
+                            string sanitizedPath = fontFilePath.Replace("\"", string.Empty).Replace("'", string.Empty);
+                            if (sanitizedPath != string.Empty)
+                            {
+                                var resolvedFontPath = GetFullPathWrtBasePath(sanitizedPath, Path.GetDirectoryName(resolvedFilePath));
+                                listExtractedPaths.Add(resolvedFontPath);
+                            }
                         }
                     }
 
