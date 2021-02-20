@@ -59,6 +59,14 @@
     <Compile Include="BulkExport.cs" />
     <Compile Include="ChangeType.cs" />
     <Compile Include="Chartjs_Exp.cs" />
+    <Compile Include="ExportSingleViaHttps.cs" />
+    <Compile Include="ExportWithMinifyResources.cs" />
+    <Compile Include="ExportUsingDefaultTemplates.cs" />
+    <Compile Include="ExcelExportMultiple2.cs" />
+    <Compile Include="ExcelExportMultiple.cs" />
+    <Compile Include="ExcelExportXls.cs" />
+    <Compile Include="ExcelExportCSV.cs" />
+    <Compile Include="ExportLocalFont.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
@@ -81,21 +89,35 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="resources\bulk.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include="resources\bulk.json" />
+    <None Include="resources\chart-config-file-for-big.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="resources\chart-config-file.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include="resources\chart-config-file.json" />
+    <None Include="resources\chart-config-file2.json" />
+    <None Include="resources\dashboard_charts.json" />
+    <None Include="resources\default_template.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="resources\dashboard_charts.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff" />
+    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff2" />
+    <None Include="resources\fonts\alex-brush\AlexBrush-Regular.ttf" />
+    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff" />
+    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff2" />
+    <None Include="resources\fonts\great-vibes\GreatVibes-Regular.otf" />
+    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff" />
+    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff2" />
+    <None Include="resources\fonts\kaushanscript-regular\KaushanScript-Regular.otf" />
+    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff" />
+    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff2" />
+    <None Include="resources\fonts\OpenSansCondensed-LightItalic.ttf" />
+    <None Include="resources\fonts\pacificio\pacifico-webfont.woff" />
+    <None Include="resources\fonts\pacificio\pacifico-webfont.woff2" />
+    <None Include="resources\fonts\pacificio\Pacifico.ttf" />
+    <None Include="resources\multiple.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="resources\scrollchart.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Content Include="resources\timeseries-config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="resources\scrollchart.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FusionExport\FusionExport.csproj">
@@ -104,42 +126,51 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\callback.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="resources\callback.js" />
+    <Content Include="resources\chart.svg" />
+    <Content Include="resources\dashboard-big-template.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="resources\chart.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\expand_scroll.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\logo.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template_amcharts.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template_chartjs.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template_d3.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="resources\dashboard-template.html" />
+    <Content Include="resources\expand_scroll.js" />
+    <Content Include="resources\fonts\alex-brush\alexbrush-regular-demo.html" />
+    <Content Include="resources\fonts\alex-brush\generator_config.txt" />
+    <Content Include="resources\fonts\alex-brush\specimen_files\grid_12-825-55-15.css" />
+    <Content Include="resources\fonts\alex-brush\specimen_files\specimen_stylesheet.css" />
+    <Content Include="resources\fonts\alex-brush\stylesheet.css" />
+    <Content Include="resources\fonts\generator_config.txt" />
+    <Content Include="resources\fonts\great-vibes\generator_config.txt" />
+    <Content Include="resources\fonts\great-vibes\greatvibes-regular-demo.html" />
+    <Content Include="resources\fonts\great-vibes\specimen_files\grid_12-825-55-15.css" />
+    <Content Include="resources\fonts\great-vibes\specimen_files\specimen_stylesheet.css" />
+    <Content Include="resources\fonts\great-vibes\stylesheet.css" />
+    <Content Include="resources\fonts\kaushanscript-regular\generator_config.txt" />
+    <Content Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-demo.html" />
+    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\grid_12-825-55-15.css" />
+    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\specimen_stylesheet.css" />
+    <Content Include="resources\fonts\kaushanscript-regular\stylesheet.css" />
+    <Content Include="resources\fonts\opensanscondensed-lightitalic-demo.html" />
+    <Content Include="resources\fonts\pacificio\generator_config.txt" />
+    <Content Include="resources\fonts\pacificio\pacifico-demo.html" />
+    <Content Include="resources\fonts\pacificio\specimen_files\grid_12-825-55-15.css" />
+    <Content Include="resources\fonts\pacificio\specimen_files\specimen_stylesheet.css" />
+    <Content Include="resources\fonts\pacificio\stylesheet.css" />
+    <Content Include="resources\fonts\specimen_files\grid_12-825-55-15.css" />
+    <Content Include="resources\fonts\specimen_files\specimen_stylesheet.css" />
+    <Content Include="resources\fonts\stylesheet.css" />
+    <Content Include="resources\logo.png" />
     <Content Include="resources\single.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="resources\template_googlecharts.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template_highcharts.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="resources\template_zingchart.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="resources\style.css" />
+    <Content Include="resources\template.html" />
+    <Content Include="resources\template_amcharts.html" />
+    <Content Include="resources\template_chartjs.html" />
+    <Content Include="resources\template_d3.html" />
+    <Content Include="resources\template_googlecharts.html" />
+    <Content Include="resources\template_highcharts.html" />
+    <Content Include="resources\template_zingchart.html" />
+    <Content Include="resources\timeseries-config.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

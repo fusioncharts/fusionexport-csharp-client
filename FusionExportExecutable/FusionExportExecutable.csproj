@@ -59,52 +59,52 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="static\test\chart-config-file.json">
+    <None Include="static\resources\chart-config-file2.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\alex-brush\alexbrush-regular-webfont.woff">
+    <None Include="static\resources\fonts\alex-brush\alexbrush-regular-webfont.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\alex-brush\alexbrush-regular-webfont.woff2">
+    <None Include="static\resources\fonts\alex-brush\alexbrush-regular-webfont.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\alex-brush\AlexBrush-Regular.ttf">
+    <None Include="static\resources\fonts\alex-brush\AlexBrush-Regular.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\great-vibes\greatvibes-regular-webfont.woff">
+    <None Include="static\resources\fonts\great-vibes\greatvibes-regular-webfont.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\great-vibes\greatvibes-regular-webfont.woff2">
+    <None Include="static\resources\fonts\great-vibes\greatvibes-regular-webfont.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\great-vibes\GreatVibes-Regular.otf">
+    <None Include="static\resources\fonts\great-vibes\GreatVibes-Regular.otf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff">
+    <None Include="static\resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff2">
+    <None Include="static\resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\kaushanscript-regular\KaushanScript-Regular.otf">
+    <None Include="static\resources\fonts\kaushanscript-regular\KaushanScript-Regular.otf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\opensanscondensed-lightitalic-webfont.woff">
+    <None Include="static\resources\fonts\opensanscondensed-lightitalic-webfont.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\opensanscondensed-lightitalic-webfont.woff2">
+    <None Include="static\resources\fonts\opensanscondensed-lightitalic-webfont.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\OpenSansCondensed-LightItalic.ttf">
+    <None Include="static\resources\fonts\OpenSansCondensed-LightItalic.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\pacificio\pacifico-webfont.woff">
+    <None Include="static\resources\fonts\pacificio\pacifico-webfont.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\pacificio\pacifico-webfont.woff2">
+    <None Include="static\resources\fonts\pacificio\pacifico-webfont.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="static\test\fonts\pacificio\Pacifico.ttf">
+    <None Include="static\resources\fonts\pacificio\Pacifico.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -151,88 +151,88 @@
     <Content Include="static\html\template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\dashboard-template.html">
+    <Content Include="static\resources\dashboard-template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\alex-brush\alexbrush-regular-demo.html">
+    <Content Include="static\resources\fonts\alex-brush\alexbrush-regular-demo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\alex-brush\generator_config.txt">
+    <Content Include="static\resources\fonts\alex-brush\generator_config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\alex-brush\specimen_files\grid_12-825-55-15.css">
+    <Content Include="static\resources\fonts\alex-brush\specimen_files\grid_12-825-55-15.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\alex-brush\specimen_files\specimen_stylesheet.css">
+    <Content Include="static\resources\fonts\alex-brush\specimen_files\specimen_stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\alex-brush\stylesheet.css">
+    <Content Include="static\resources\fonts\alex-brush\stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\generator_config.txt">
+    <Content Include="static\resources\fonts\generator_config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\great-vibes\generator_config.txt">
+    <Content Include="static\resources\fonts\great-vibes\generator_config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\great-vibes\greatvibes-regular-demo.html">
+    <Content Include="static\resources\fonts\great-vibes\greatvibes-regular-demo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\great-vibes\specimen_files\grid_12-825-55-15.css">
+    <Content Include="static\resources\fonts\great-vibes\specimen_files\grid_12-825-55-15.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\great-vibes\specimen_files\specimen_stylesheet.css">
+    <Content Include="static\resources\fonts\great-vibes\specimen_files\specimen_stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\great-vibes\stylesheet.css">
+    <Content Include="static\resources\fonts\great-vibes\stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\kaushanscript-regular\generator_config.txt">
+    <Content Include="static\resources\fonts\kaushanscript-regular\generator_config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\kaushanscript-regular\kaushanscript-regular-demo.html">
+    <Content Include="static\resources\fonts\kaushanscript-regular\kaushanscript-regular-demo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\kaushanscript-regular\specimen_files\grid_12-825-55-15.css">
+    <Content Include="static\resources\fonts\kaushanscript-regular\specimen_files\grid_12-825-55-15.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\kaushanscript-regular\specimen_files\specimen_stylesheet.css">
+    <Content Include="static\resources\fonts\kaushanscript-regular\specimen_files\specimen_stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\kaushanscript-regular\stylesheet.css">
+    <Content Include="static\resources\fonts\kaushanscript-regular\stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\opensanscondensed-lightitalic-demo.html">
+    <Content Include="static\resources\fonts\opensanscondensed-lightitalic-demo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\pacificio\generator_config.txt">
+    <Content Include="static\resources\fonts\pacificio\generator_config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\pacificio\pacifico-demo.html">
+    <Content Include="static\resources\fonts\pacificio\pacifico-demo.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\pacificio\specimen_files\grid_12-825-55-15.css">
+    <Content Include="static\resources\fonts\pacificio\specimen_files\grid_12-825-55-15.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\pacificio\specimen_files\specimen_stylesheet.css">
+    <Content Include="static\resources\fonts\pacificio\specimen_files\specimen_stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\pacificio\stylesheet.css">
+    <Content Include="static\resources\fonts\pacificio\stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\specimen_files\grid_12-825-55-15.css">
+    <Content Include="static\resources\fonts\specimen_files\grid_12-825-55-15.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\specimen_files\specimen_stylesheet.css">
+    <Content Include="static\resources\fonts\specimen_files\specimen_stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\fonts\stylesheet.css">
+    <Content Include="static\resources\fonts\stylesheet.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\css\style.css">
+    <Content Include="static\resources\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="static\test\TextFile1.txt" />
+    <Content Include="static\resources\TextFile1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

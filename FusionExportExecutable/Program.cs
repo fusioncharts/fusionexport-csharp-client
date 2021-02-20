@@ -13,7 +13,7 @@ namespace FusionExportExecutable
             try
             {
                 List<string> results = new List<string>();
-                string chartConfigFile = "./static/test/chart-config-file.json";
+                string chartConfigFile = "./static/test/chart-config-file2.json";
                 // string svgFile = "./static/sample.svg";
                 // string resourcesFile = "./static/resources.json";
                 string templateFile = "./static/test/dashboard-template.html";
