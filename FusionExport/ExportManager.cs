@@ -11,6 +11,7 @@ namespace FusionCharts.FusionExport.Client
         private string host;
         private int port;
         private Boolean isSecure;
+        private Boolean minifyResources;
         private Exporter exporter = null;
 
         public ExportManager()
@@ -18,15 +19,17 @@ namespace FusionCharts.FusionExport.Client
             this.host = Constants.DEFAULT_HOST;
             this.port = Constants.DEFAULT_PORT;
             this.isSecure = Constants.DEFAULT_ISSECURE;
-            exporter = new Exporter(this.host, this.port, this.isSecure);
+            this.minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
         }
 
-        public ExportManager(string host, int port, Boolean isSecure)
+        public ExportManager(string host, int port, Boolean isSecure, Boolean minifyResources)
         {
             this.host = host;
             this.port = port;
             this.isSecure = isSecure;
-            exporter = new Exporter(this.host, this.port, this.isSecure);
+            this.minifyResources = minifyResources;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
         }
 
         ~ExportManager()
