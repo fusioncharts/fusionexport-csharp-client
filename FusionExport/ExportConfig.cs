@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using static FusionCharts.FusionExport.Utils.Utils;
 using System.Text.RegularExpressions;
+using NUglify;
 
 
 namespace FusionCharts.FusionExport.Client
@@ -28,6 +29,7 @@ namespace FusionCharts.FusionExport.Client
         const string ASYNCCAPTURE = "asyncCapture";
         const string PAYLOAD = "payload";
         const string TEMPLATEURL = "templateURL";
+        Boolean minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
         public class MetadataElementSchema
         {
             public enum ElementType
@@ -533,8 +535,9 @@ namespace FusionCharts.FusionExport.Client
             return newExportConfig;
         }
 
-        public MultipartFormDataContent GetFormattedConfigs()
+        public MultipartFormDataContent GetFormattedConfigs(Boolean exportServerMinifyResources)
         {
+            this.minifyResources = exportServerMinifyResources;
             MultipartFormDataContent formDataContent = new MultipartFormDataContent();
 
             using (ExportConfig clonedSelf = this.CloneWithProcessedProperties())
@@ -674,7 +677,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (zipBag.Count > 0)
             {
-                string zipFile = ExportConfig.generateZip(zipBag);
+                string zipFile = ExportConfig.generateZip(zipBag, this.minifyResources);
                 this.configs[PAYLOAD] = zipFile;
             }
             zipBag.Clear();
@@ -685,6 +688,11 @@ namespace FusionCharts.FusionExport.Client
         private void createTemplateZipPaths(out List<ResourcePathInfo> outZipPaths, out string outTemplatePathWithinZip)
         {
             string templateFilePath = this.Get(TEMPLATE).ToString();
+            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            Boolean isMinified = this.minifyResources;
+            string minifiedHash = ".min-fusionexport-" + unixTimestamp;
+            string minifiedExtension = isMinified ? minifiedHash : "";
+            string templatePathWithinZip = "";
 
             // The template is a HTML body not file
             if (templateFilePath.StartsWith("<"))
@@ -743,15 +751,55 @@ namespace FusionCharts.FusionExport.Client
 
             List<ResourcePathInfo> zipPaths = generatePathForZip(mapExtractedPathAbsToRel, baseDirectoryPath);
 
-            foreach(var zipPath in zipPaths)
+            string[] extensions = new string[] { ".html", ".css", ".js" };
+            foreach (var zipPath in zipPaths)
             {
-                zipPath.internalPath = Path.Combine("template", zipPath.internalPath);
+                if (isMinified && extensions.Contains(Path.GetExtension(zipPath.internalPath)))
+                {
+                    string internalDir = Path.GetDirectoryName(zipPath.internalPath);
+                    internalDir = internalDir.Replace(@".\", String.Empty);
+                    if (internalDir.Length > 0 && internalDir.Substring(0, 1) == ".")
+                    {
+                        internalDir = internalDir.Remove(0, 1);
+                    }
+                    else
+                    {
+                        internalDir = internalDir + @"\";
+                    }
+                    string fileExtension = Path.GetExtension(zipPath.internalPath);
+                    string fileName = Path.GetFileNameWithoutExtension(zipPath.internalPath);
+                    zipPath.internalPath = Path.Combine("template", internalDir + fileName + minifiedExtension + fileExtension);
+                }
+                else
+                {
+                    zipPath.internalPath = Path.Combine("template", zipPath.internalPath);
+                }
             }
 
-            string templatePathWithinZip = Path.Combine(
-              "template",
-              GetRelativePathFrom(templateFilePath, baseDirectoryPath)
-            );
+            string extension = Path.GetExtension(templateFilePath);
+            Boolean isHtmlJsCss = extensions.Contains(extension);
+            if (isMinified && isHtmlJsCss)
+            {
+                string rawTemplatePath = Path.GetDirectoryName(templateFilePath);
+                string templateExtension = Path.GetExtension(templateFilePath);
+                string templateFileName = Path.GetFileNameWithoutExtension(templateFilePath);
+                string rawTemplateRelativePath = GetRelativePathFrom(rawTemplatePath + @"\" + templateFileName + minifiedExtension + templateExtension, baseDirectoryPath);
+                if (rawTemplateRelativePath.Length > 0)
+                {
+                    rawTemplateRelativePath = rawTemplateRelativePath.Replace(@".\", String.Empty);
+                }
+                templatePathWithinZip = Path.Combine(
+                  "template",
+                  rawTemplateRelativePath
+                );
+            }
+            else
+            {
+                templatePathWithinZip = Path.Combine(
+                    "template",
+                    GetRelativePathFrom(templateFilePath, baseDirectoryPath)
+                );
+            }
 
             outZipPaths = zipPaths;
             outTemplatePathWithinZip = templatePathWithinZip;
@@ -938,20 +986,52 @@ namespace FusionCharts.FusionExport.Client
             return listFilePath;
         }
 
-        private static string generateZip(List<ResourcePathInfo> fileBag)
+        private static string generateZip(List<ResourcePathInfo> fileBag, Boolean isminify)
         {
             var tempZipFilePath = GetTempFileName();
+            string[] extensions = new string[] { ".html", ".css", ".js" };
             using (ZipFile zip = new ZipFile())
             {
                 foreach (var file in fileBag)
                 {
                     string dirPath = file.internalPath.Replace(@"\.\", @"\");
-                    ZipEntry zipEntry  = zip.AddFile(file.externalPath);
+                    string newPath;
+                    string fileExtension;
+                    fileExtension = Path.GetExtension(file.internalPath);
+                    Boolean isHtmlJsCss = extensions.Contains(fileExtension);
+                    if (isminify && isHtmlJsCss)
+                    {
+                        string externalDir = Path.GetDirectoryName(file.externalPath);
+                        string fileName = Path.GetFileName(file.internalPath);
+                        newPath = externalDir + "/" + fileName;
+
+                        if (Path.GetExtension(file.externalPath).ToLower() == ".css")
+                        {
+                            var result = Uglify.Css(System.IO.File.ReadAllText(file.externalPath));
+                            File.WriteAllText(newPath, result.Code);
+                        }
+                        if (Path.GetExtension(file.externalPath).ToLower() == ".js")
+                        {
+                            var result = Uglify.Js(System.IO.File.ReadAllText(file.externalPath));
+                            File.WriteAllText(newPath, result.Code);
+                        }
+                        if (Path.GetExtension(file.externalPath).ToLower() == ".html")
+                        {
+                            var result = Uglify.Html(System.IO.File.ReadAllText(file.externalPath));
+                            File.WriteAllText(newPath, result.Code);
+                        }
+                    }
+                    else
+                    {
+                        newPath = file.externalPath;
+                    }
+                    ZipEntry zipEntry = zip.AddFile(newPath);
                     zipEntry.FileName = dirPath;
+                    //if (isminify && isHtmlJsCss) File.Delete(newPath);
                 }
                 zip.Save(tempZipFilePath);
             }
             return tempZipFilePath;
-        }        
+        }
     }
 }
