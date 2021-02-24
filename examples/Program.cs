@@ -38,7 +38,9 @@ namespace examples
             //ExcelExportMultiple.Run();
             //ExcelExportMultiple2.Run();
             //ExportUsingDefaultTemplates.Run();
-            ExportSingleViaHttps.Run("127.0.0.1", 1337, false);
+            //ExportSingleViaHttps.Run("127.0.0.1", 1337, false);
+            //ExportWithMinifyResources.Run();
+            ExportExternalFontWithMinifyResources.Run();
             Console.ReadKey();
         }
     }

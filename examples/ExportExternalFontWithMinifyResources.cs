@@ -6,25 +6,23 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class ExportWithMinifyResources
+    public static class ExportExternalFontWithMinifyResources
     {
         public static void Run()
         {
             try
             {
                 List<string> results = new List<string>();
-                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\chart-config-file-for-big.json";
-                string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\dashboard-big-template.html";
+                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\chart-config-file.json";
+                string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\dashboard-template.html";
 
                 ExportConfig exportConfig = new ExportConfig();
 
                 // Instantiate the ExportManager class
-                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, Constants.DEFAULT_MINIFY_RESOURCES))
+                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, true))
                 {
                     exportConfig.Set("chartConfig", chartConfigFile);
                     exportConfig.Set("templateFilePath", templateFilePath);
-                    exportConfig.Set("type", "pdf");
-                    exportConfig.Set("quality", "best");
 
                     // Call the Export() method with the export config
                     //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));

@@ -23,6 +23,14 @@ namespace FusionCharts.FusionExport.Client
             exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
         }
 
+        public ExportManager(string host, int port, Boolean isSecure)
+        {
+            this.host = host;
+            this.port = port;
+            this.isSecure = isSecure;
+            this.minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
+        }
         public ExportManager(string host, int port, Boolean isSecure, Boolean minifyResources)
         {
             this.host = host;

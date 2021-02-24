@@ -1005,6 +1005,23 @@ namespace FusionCharts.FusionExport.Client
                         string fileName = Path.GetFileName(file.internalPath);
                         newPath = externalDir + "/" + fileName;
 
+                        Boolean isHtml = fileExtension == ".html" ? true : false;
+                        string htmlFile = "";
+
+                        if (isHtml)
+                        {
+                            var htmlDoc = new HtmlDocument();
+                            htmlDoc.Load(file.externalPath);
+
+                            ExportConfig.updateHtml(out htmlDoc, htmlDoc, "//link", fileBag);
+                            ExportConfig.updateHtml(out htmlDoc, htmlDoc, "//script", fileBag);
+                            Console.WriteLine(htmlDoc.DocumentNode.WriteTo());
+                            htmlFile = externalDir + "/temp.fusionexport.html";
+                            File.WriteAllText(htmlFile, htmlDoc.DocumentNode.WriteTo());
+
+                        }
+
+
                         if (Path.GetExtension(file.externalPath).ToLower() == ".css")
                         {
                             var result = Uglify.Css(System.IO.File.ReadAllText(file.externalPath));
@@ -1017,8 +1034,9 @@ namespace FusionCharts.FusionExport.Client
                         }
                         if (Path.GetExtension(file.externalPath).ToLower() == ".html")
                         {
-                            var result = Uglify.Html(System.IO.File.ReadAllText(file.externalPath));
+                            var result = Uglify.Html(System.IO.File.ReadAllText(isHtml ? htmlFile : file.externalPath));
                             File.WriteAllText(newPath, result.Code);
+                            if (isHtml) File.Delete(htmlFile);
                         }
                     }
                     else
@@ -1032,6 +1050,27 @@ namespace FusionCharts.FusionExport.Client
                 zip.Save(tempZipFilePath);
             }
             return tempZipFilePath;
+        }
+
+        private static void updateHtml(out HtmlDocument outDocument, HtmlDocument document, string target, List<ResourcePathInfo> fileBag)
+        {
+            string property = target == "//script" || target == "//img" ? "src" : "href";
+            HtmlNodeCollection tags = document.DocumentNode.SelectNodes(target);
+            foreach (var tag in tags)
+            {
+                if (tag.HasAttributes && tag.Attributes[property] != null && isLocalResource(tag.Attributes[property].Value))
+                {
+                    var tagValue = tag.Attributes[property].Value.Replace(@"./", String.Empty);
+                    tagValue = tagValue.Replace("/", @"\");
+                    var found = fileBag.Find((linktag) => linktag.externalPath.Contains(tagValue) && tagValue.Length>0);
+                    if (found != null)
+                    {
+                        tag.SetAttributeValue(property, GetRelativePathFrom(found.internalPath, "template"));
+                    }
+                }
+            }
+
+            outDocument = document;
         }
     }
 }
