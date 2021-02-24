@@ -51,7 +51,7 @@ namespace FusionExportTest
                 exportConfig.Set("type", "pdf");
                 // Call the Export() method with the export config
                 //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));
-                results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true));
+                results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User),true));
             }
 
             foreach (string path in results)

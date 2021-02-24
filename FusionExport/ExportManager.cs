@@ -105,7 +105,7 @@ namespace FusionCharts.FusionExport.Client
 
         public List<string> Export(ExportConfig exportConfig, bool unzip)
         {
-            return (List<string>)ExportChart(exportConfig, null, unzip);
+            return (List<string>)ExportChart(exportConfig, null, unzip,false);
         }
 
         public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
