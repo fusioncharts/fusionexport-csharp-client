@@ -15,7 +15,7 @@ namespace FusionCharts.FusionExport.Client
 {
     public class ExportConfig : IDisposable
     {
-        public const string CHARTCONFIG = "chartConfig";
+        const string CHARTCONFIG = "chartConfig";
         const string INPUTSVG = "inputSVG";
         const string CALLBACKS = "callbackFilePath";
         const string DASHBOARDLOGO = "dashboardLogo";
@@ -27,6 +27,7 @@ namespace FusionCharts.FusionExport.Client
         const string ASYNCCAPTURE = "asyncCapture";
         const string PAYLOAD = "payload";
         const string TEMPLATEURL = "templateURL";
+        const string EXPORTBULK = "exportBulk";
         public class MetadataElementSchema
         {
             public enum ElementType
@@ -521,7 +522,6 @@ namespace FusionCharts.FusionExport.Client
             return configValues.ToArray();
         }
 
-        public string exportBulk { get; set; }
         public ExportConfig Clone()
         {
             ExportConfig newExportConfig = new ExportConfig();
@@ -667,6 +667,20 @@ namespace FusionCharts.FusionExport.Client
                     if (Convert.ToBoolean(oldValue))
                     {
                         this.configs[ASYNCCAPTURE] = true;
+                    }
+                }
+            }
+
+            if (this.Has(EXPORTBULK))
+            {
+                oldValue = this.Get(EXPORTBULK).ToString();
+                this.Remove(ASYNCCAPTURE);
+
+                if (!string.IsNullOrEmpty(oldValue))
+                {
+                    if (!Convert.ToBoolean(oldValue))
+                    {
+                        this.configs[EXPORTBULK] = "";
                     }
                 }
             }

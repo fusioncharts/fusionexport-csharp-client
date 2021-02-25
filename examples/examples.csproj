@@ -59,6 +59,7 @@
     <Compile Include="BulkExport.cs" />
     <Compile Include="ChangeType.cs" />
     <Compile Include="Chartjs_Exp.cs" />
+    <Compile Include="ExportUsingDefaultTemplates.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
@@ -97,6 +98,9 @@
     <Content Include="resources\timeseries-config.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="resources\default_template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FusionExport\FusionExport.csproj">

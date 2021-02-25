@@ -16,7 +16,7 @@ namespace examples
             //SendEmail.Run();
             //Header_Footer.Run();
             //ExportSingleChart.Run();
-            Default.Run();
+            //Default.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
@@ -33,6 +33,7 @@ namespace examples
             //OutputAsZip.Run();
             //Quality.Run();
             //ZingChart_Exp.Run();
+            ExportUsingDefaultTemplates.Run();
             Console.ReadKey();
         }
     }
