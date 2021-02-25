@@ -119,6 +119,8 @@
     <None Include="app.config" />
     <None Include="metadata\fusionexport-meta.json" />
     <None Include="metadata\fusionexport-typings.json" />
+    <None Include="metafiles\fusionexport-meta.json" />
+    <None Include="metafiles\fusionexport-typings.json" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

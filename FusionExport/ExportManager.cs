@@ -119,15 +119,15 @@ namespace FusionCharts.FusionExport.Client
             return (List<string>)ExportChart(exportConfig, null, unzip);
         }
 
-        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
+        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip, Boolean exportBulk = true)
         {
+            exportConfig.Set("exportBulk", exportBulk);
             return (List<string>)ExportChart(exportConfig, outputDir, unzip);
         }
 
-
         public Dictionary<string, Stream> ExportAsStream(ExportConfig exportConfig)
         {
-            MemoryStream ms =(MemoryStream)ExportChart(exportConfig, "", false, true);
+            MemoryStream ms = (MemoryStream)ExportChart(exportConfig, "", false, true);
 
             Dictionary<string, Stream> files = new Dictionary<string, Stream>();
 

@@ -134,5 +134,18 @@
   "footerComponents": {
     "type": "string",
     "supportedTypes": [ "string" ]
+  },
+  "exportBulk": {
+    "type": "boolean",
+    "supportedTypes": [ "string", "boolean" ],
+    "converter": "BooleanConverter"
+  },
+    "header":{
+    "type": "string",
+    "supportedTypes": [ "string" ]
+  },
+    "subheader":{
+    "type": "string",
+    "supportedTypes": [ "string" ]
   }
 }

@@ -16,6 +16,7 @@ namespace examples
             //SendEmail.Run();
             //Header_Footer.Run();
             //ExportSingleChart.Run();
+            //Default.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
@@ -40,7 +41,8 @@ namespace examples
             //ExportUsingDefaultTemplates.Run();
             //ExportSingleViaHttps.Run("127.0.0.1", 1337, false);
             //ExportWithMinifyResources.Run();
-            ExportExternalFontWithMinifyResources.Run();
+            // ExportExternalFontWithMinifyResources.Run();
+            ExportUsingDefaultTemplates.Run();
             Console.ReadKey();
         }
     }

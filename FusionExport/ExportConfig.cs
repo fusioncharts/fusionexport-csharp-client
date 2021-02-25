@@ -30,6 +30,7 @@ namespace FusionCharts.FusionExport.Client
         const string PAYLOAD = "payload";
         const string TEMPLATEURL = "templateURL";
         Boolean minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
+        const string EXPORTBULK = "exportBulk";
         public class MetadataElementSchema
         {
             public enum ElementType
@@ -141,7 +142,7 @@ namespace FusionCharts.FusionExport.Client
                 return configValue;
             }
 
-                private static object EnumConverter(object configValue, object configName, object metadata)
+            private static object EnumConverter(object configValue, object configName, object metadata)
             {
                 if (configValue.GetType() != typeof(string))
                 {
@@ -227,7 +228,7 @@ namespace FusionCharts.FusionExport.Client
 
             public static string ChartConfigConverter(object configValue, object configName, object metadata)
             {
-                if (configValue.GetType() != typeof(string) )
+                if (configValue.GetType() != typeof(string))
                 {
                     string errMsg = string.Format("'{0}' of type '{1}' is unsupported. Supported data types are string.", configName.ToString(), configValue.GetType().Name);
                     throw new Exception(errMsg);
@@ -242,7 +243,7 @@ namespace FusionCharts.FusionExport.Client
 
                         throw new FileNotFoundException(string.Format("{0}\n{1}", valueStr, "Parameter name: chartConfig ---> chartConfig [URL] not found. Please provide an appropriate path."));
                     }
-                    
+
                     // Read the file content and convert to string
                     valueStr = File.ReadAllText(valueStr);
                 }
@@ -399,7 +400,7 @@ namespace FusionCharts.FusionExport.Client
                     var obj = Newtonsoft.Json.Linq.JToken.Parse(jsonString);
                     return true;
                 }
-                catch 
+                catch
                 {
                     return false;
                 }
@@ -548,7 +549,7 @@ namespace FusionCharts.FusionExport.Client
                     {
                         using (StreamContent streamContent = new StreamContent(File.Open(config.Value.ToString(), FileMode.Open)))
                         {
-                            formDataContent.Add(Utils.Utils.CloneStreamContent(streamContent), config.Key, "file");                            
+                            formDataContent.Add(Utils.Utils.CloneStreamContent(streamContent), config.Key, "file");
                         }
                     }
                     else
@@ -571,7 +572,7 @@ namespace FusionCharts.FusionExport.Client
 
             this.configs[CLIENTNAME] = "C#";
             this.configs[PLATFORM] = Environment.OSVersion.Platform.ToString();
-            
+
             /*
             if (this.Has(CHARTCONFIG))
             {
@@ -604,8 +605,8 @@ namespace FusionCharts.FusionExport.Client
                 internalFilePath = "inputSVG.svg";
                 zipBag.Add(new ResourcePathInfo()
                 {
-                     internalPath = internalFilePath,
-                     externalPath = oldValue
+                    internalPath = internalFilePath,
+                    externalPath = oldValue
                 });
                 this.configs[INPUTSVG] = internalFilePath;
                 //this.Set(INPUTSVG, internalFilePath);                
@@ -630,9 +631,9 @@ namespace FusionCharts.FusionExport.Client
             {
                 oldValue = this.Get(DASHBOARDLOGO).ToString();
                 this.Remove(DASHBOARDLOGO);
-                
+
                 var ext = new FileInfo(oldValue).Extension;
-                internalFilePath = string.Format("dashboardLogo{0}", ext.StartsWith(".")? ext: "." + ext);
+                internalFilePath = string.Format("dashboardLogo{0}", ext.StartsWith(".") ? ext : "." + ext);
                 zipBag.Add(new ResourcePathInfo()
                 {
                     internalPath = internalFilePath,
@@ -648,7 +649,7 @@ namespace FusionCharts.FusionExport.Client
                 this.Remove(OUTPUTFILEDEFINITION);
 
                 this.configs[OUTPUTFILEDEFINITION] = ReadFileContent(oldValue, encodeBase64: false);
-            }          
+            }
 
             if (this.Has(TEMPLATE))
             {
@@ -658,7 +659,7 @@ namespace FusionCharts.FusionExport.Client
 
                 this.configs[TEMPLATE] = templatePathWithinZip;
 
-                zipBag.AddRange(zipPaths);                
+                zipBag.AddRange(zipPaths);
             }
 
             if (this.Has(ASYNCCAPTURE))
@@ -671,6 +672,20 @@ namespace FusionCharts.FusionExport.Client
                     if (Convert.ToBoolean(oldValue))
                     {
                         this.configs[ASYNCCAPTURE] = true;
+                    }
+                }
+            }
+
+            if (this.Has(EXPORTBULK))
+            {
+                oldValue = this.Get(EXPORTBULK).ToString();
+                this.Remove(ASYNCCAPTURE);
+
+                if (!string.IsNullOrEmpty(oldValue))
+                {
+                    if (!Convert.ToBoolean(oldValue))
+                    {
+                        this.configs[EXPORTBULK] = "";
                     }
                 }
             }
@@ -728,10 +743,10 @@ namespace FusionCharts.FusionExport.Client
                     throw new DirectoryNotFoundException("All the extracted resources and template might not be in the same drive");
                 }
             }
-                        
+
             // Filter listResourcePaths to those only which are within basePath
             listResourcePaths = listResourcePaths.Where((tmpPath) => IsWithinPath(tmpPath, baseDirectoryPath)).ToList();
-            
+
             // Make map relative version of extracted and resource file paths (compared to basepath) with original filepath
             var mapExtractedPathAbsToRel = new Dictionary<string, string>();
             foreach (var tmpPath in listExtractedPaths)
@@ -809,7 +824,7 @@ namespace FusionCharts.FusionExport.Client
         private List<string> findResources()
         {
             string templateFilePath = this.Get(TEMPLATE).ToString();
-            
+
             if (!string.IsNullOrEmpty(templateFilePath))
             {
                 string templateDirectory = Path.GetDirectoryName(templateFilePath);
@@ -818,7 +833,7 @@ namespace FusionCharts.FusionExport.Client
                 // Load templateFilePath content as html page
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.Load(templateFilePath);
-               
+
                 List<string> listExtractedPaths = new List<string>();
 
                 // Find all link, script, img tags with local URL from loaded html
@@ -907,10 +922,10 @@ namespace FusionCharts.FusionExport.Client
         }
 
         private void resolveResourceGlobFiles(out string outBaseDirectoryPath, out List<string> outListResourcePaths)
-        {            
+        {
             string baseDirectoryPath = null;
             List<string> listResourcePaths = new List<string>();
-            
+
             if (!this.Has(RESOURCES))
             {
                 outBaseDirectoryPath = baseDirectoryPath;
@@ -931,7 +946,7 @@ namespace FusionCharts.FusionExport.Client
 
             if (resources.exclude == null)
                 resources.exclude = new List<string>();
-            
+
             // New attribute `resolvePath` - overloads actual direcotry location for glob resolve
             if (resources.resolvePath != null)
             {
@@ -958,7 +973,7 @@ namespace FusionCharts.FusionExport.Client
                     var matchedFiles = root.GlobFiles(eachExcludePath)
                                 .Select((fileInfo) => fileInfo.FullName)
                                 .ToList();
-                    listResourceExcludePaths.AddRange(matchedFiles);                    
+                    listResourceExcludePaths.AddRange(matchedFiles);
                 }
                 /* eslint-enable no-restricted-syntax */
 
@@ -974,13 +989,13 @@ namespace FusionCharts.FusionExport.Client
         {
             List<ResourcePathInfo> listFilePath = new List<ResourcePathInfo>();
 
-            foreach (KeyValuePair<string,string> filepath in listAllFilePaths)
+            foreach (KeyValuePair<string, string> filepath in listAllFilePaths)
             {
                 string filePathWithinZip = GetRelativePathFrom(filepath.Key, baseDirectoryPath);
                 listFilePath.Add(new ResourcePathInfo()
                 {
-                     internalPath = filePathWithinZip,
-                     externalPath = GetAbsolutePathFrom(filepath.Key)
+                    internalPath = filePathWithinZip,
+                    externalPath = GetAbsolutePathFrom(filepath.Key)
                 });
             }
             return listFilePath;

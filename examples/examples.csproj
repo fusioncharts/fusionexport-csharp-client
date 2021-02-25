@@ -68,9 +68,11 @@
     <Compile Include="ExcelExportXls.cs" />
     <Compile Include="ExcelExportCSV.cs" />
     <Compile Include="ExportLocalFont.cs" />
+    <Compile Include="ExportUsingDefaultTemplates.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="Default.cs" />
     <Compile Include="ExportAsStream.cs" />
     <Compile Include="ExportMultipleCharts.cs" />
     <Compile Include="Header_Footer.cs" />
@@ -151,6 +153,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="resources\scrollchart.json" />
+    <None Include="resources\default_template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FusionExport\FusionExport.csproj">
