@@ -20,7 +20,7 @@ namespace FusionExportExecutable
 
                 ExportConfig exportConfig = new ExportConfig();
 
-                using (ExportManager em = new ExportManager())
+                using (ExportManager em = new ExportManager("localhost", 1337, false, true))
                 {
                     exportConfig.Set("chartConfig", chartConfigFile);
                     exportConfig.Set("templateFilePath", templateFile);

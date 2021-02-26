@@ -9,5 +9,6 @@ namespace FusionCharts.FusionExport.Client
         public const String UNSECURED_PROTOCOL = "http";
         public const String SECURED_PROTOCOL = "https";
         public const Boolean DEFAULT_ISSECURE = false;
+        public const Boolean DEFAULT_MINIFY_RESOURCES = false;
     }
 }

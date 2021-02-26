@@ -59,6 +59,7 @@
     <Compile Include="BulkExport.cs" />
     <Compile Include="ChangeType.cs" />
     <Compile Include="Chartjs_Exp.cs" />
+    <Compile Include="ExportExternalFontWithMinifyResources.cs" />
     <Compile Include="ExportSingleViaHttps.cs" />
     <Compile Include="ExportWithMinifyResources.cs" />
     <Compile Include="ExportUsingDefaultTemplates.cs" />
@@ -67,9 +68,11 @@
     <Compile Include="ExcelExportXls.cs" />
     <Compile Include="ExcelExportCSV.cs" />
     <Compile Include="ExportLocalFont.cs" />
+    <Compile Include="ExportUsingDefaultTemplates.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
+    <Compile Include="Default.cs" />
     <Compile Include="ExportAsStream.cs" />
     <Compile Include="ExportMultipleCharts.cs" />
     <Compile Include="Header_Footer.cs" />
@@ -93,31 +96,66 @@
     <None Include="resources\chart-config-file-for-big.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="resources\chart-config-file.json" />
+    <None Include="resources\chart-config-file.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="resources\chart-config-file2.json" />
     <None Include="resources\dashboard_charts.json" />
     <None Include="resources\default_template.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff" />
-    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff2" />
-    <None Include="resources\fonts\alex-brush\AlexBrush-Regular.ttf" />
-    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff" />
-    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff2" />
-    <None Include="resources\fonts\great-vibes\GreatVibes-Regular.otf" />
-    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff" />
-    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff2" />
-    <None Include="resources\fonts\kaushanscript-regular\KaushanScript-Regular.otf" />
-    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff" />
-    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff2" />
-    <None Include="resources\fonts\OpenSansCondensed-LightItalic.ttf" />
-    <None Include="resources\fonts\pacificio\pacifico-webfont.woff" />
-    <None Include="resources\fonts\pacificio\pacifico-webfont.woff2" />
-    <None Include="resources\fonts\pacificio\Pacifico.ttf" />
+    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff2">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\alex-brush\AlexBrush-Regular.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\great-vibes\greatvibes-regular-webfont.woff2">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\great-vibes\GreatVibes-Regular.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-webfont.woff2">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\kaushanscript-regular\KaushanScript-Regular.otf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\opensanscondensed-lightitalic-webfont.woff2">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\OpenSansCondensed-LightItalic.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\pacificio\pacifico-webfont.woff">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\pacificio\pacifico-webfont.woff2">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\fonts\pacificio\Pacifico.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="resources\multiple.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="resources\scrollchart.json" />
+    <None Include="resources\default_template.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FusionExport\FusionExport.csproj">
@@ -131,38 +169,92 @@
     <Content Include="resources\dashboard-big-template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="resources\dashboard-template.html" />
+    <Content Include="resources\dashboard-template.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="resources\expand_scroll.js" />
-    <Content Include="resources\fonts\alex-brush\alexbrush-regular-demo.html" />
-    <Content Include="resources\fonts\alex-brush\generator_config.txt" />
-    <Content Include="resources\fonts\alex-brush\specimen_files\grid_12-825-55-15.css" />
-    <Content Include="resources\fonts\alex-brush\specimen_files\specimen_stylesheet.css" />
-    <Content Include="resources\fonts\alex-brush\stylesheet.css" />
-    <Content Include="resources\fonts\generator_config.txt" />
-    <Content Include="resources\fonts\great-vibes\generator_config.txt" />
-    <Content Include="resources\fonts\great-vibes\greatvibes-regular-demo.html" />
-    <Content Include="resources\fonts\great-vibes\specimen_files\grid_12-825-55-15.css" />
-    <Content Include="resources\fonts\great-vibes\specimen_files\specimen_stylesheet.css" />
-    <Content Include="resources\fonts\great-vibes\stylesheet.css" />
-    <Content Include="resources\fonts\kaushanscript-regular\generator_config.txt" />
-    <Content Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-demo.html" />
-    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\grid_12-825-55-15.css" />
-    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\specimen_stylesheet.css" />
-    <Content Include="resources\fonts\kaushanscript-regular\stylesheet.css" />
-    <Content Include="resources\fonts\opensanscondensed-lightitalic-demo.html" />
-    <Content Include="resources\fonts\pacificio\generator_config.txt" />
-    <Content Include="resources\fonts\pacificio\pacifico-demo.html" />
-    <Content Include="resources\fonts\pacificio\specimen_files\grid_12-825-55-15.css" />
-    <Content Include="resources\fonts\pacificio\specimen_files\specimen_stylesheet.css" />
-    <Content Include="resources\fonts\pacificio\stylesheet.css" />
-    <Content Include="resources\fonts\specimen_files\grid_12-825-55-15.css" />
-    <Content Include="resources\fonts\specimen_files\specimen_stylesheet.css" />
-    <Content Include="resources\fonts\stylesheet.css" />
+    <Content Include="resources\fonts\alex-brush\alexbrush-regular-demo.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\alex-brush\generator_config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\alex-brush\specimen_files\grid_12-825-55-15.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\alex-brush\specimen_files\specimen_stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\alex-brush\stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\generator_config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\great-vibes\generator_config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\great-vibes\greatvibes-regular-demo.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\great-vibes\specimen_files\grid_12-825-55-15.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\great-vibes\specimen_files\specimen_stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\great-vibes\stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\kaushanscript-regular\generator_config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\kaushanscript-regular\kaushanscript-regular-demo.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\grid_12-825-55-15.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\kaushanscript-regular\specimen_files\specimen_stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\kaushanscript-regular\stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\opensanscondensed-lightitalic-demo.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\pacificio\generator_config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\pacificio\pacifico-demo.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\pacificio\specimen_files\grid_12-825-55-15.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\pacificio\specimen_files\specimen_stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\pacificio\stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\specimen_files\grid_12-825-55-15.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\specimen_files\specimen_stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\fonts\stylesheet.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="resources\logo.png" />
     <Content Include="resources\single.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="resources\style.css" />
+    <Content Include="resources\style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="resources\template.html" />
     <Content Include="resources\template_amcharts.html" />
     <Content Include="resources\template_chartjs.html" />

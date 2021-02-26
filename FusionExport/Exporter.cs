@@ -14,15 +14,17 @@ namespace FusionCharts.FusionExport.Client
         private string exportServerHost = Constants.DEFAULT_HOST;
         private int exportServerPort = Constants.DEFAULT_PORT;
         private Boolean exportServerIsSecure = Constants.DEFAULT_ISSECURE;
+        private Boolean exportServerMinifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
         private String exportServerProtocol = Constants.UNSECURED_PROTOCOL;
         private HttpClient httpClient;
         private string requestUri;
 
-        public Exporter(string exportServerHost, int exportServerPort, Boolean exportServerIsSecure)
+        public Exporter(string exportServerHost, int exportServerPort, Boolean exportServerIsSecure, Boolean exportServerMinifyResources)
         {
             this.exportServerHost = exportServerHost;
             this.exportServerPort = exportServerPort;
             this.exportServerIsSecure = exportServerIsSecure;
+            this.exportServerMinifyResources = exportServerMinifyResources;
             if (this.exportServerIsSecure) {
                 this.setExportServerProtocol(Constants.SECURED_PROTOCOL);
             }else
@@ -146,7 +148,7 @@ namespace FusionCharts.FusionExport.Client
                 string tempZipFilePath = string.Empty;
                 System.IO.MemoryStream ms = new System.IO.MemoryStream();
 
-                using (MultipartFormDataContent multipartFormData = this.exportConfig.GetFormattedConfigs())
+                using (MultipartFormDataContent multipartFormData = this.exportConfig.GetFormattedConfigs(this.exportServerMinifyResources))
                 {
                     using (Task<HttpResponseMessage> task = httpClient.PostAsync(this.requestUri, multipartFormData))
                     {

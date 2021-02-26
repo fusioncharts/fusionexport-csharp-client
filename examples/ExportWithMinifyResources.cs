@@ -8,7 +8,7 @@ namespace FusionExportTest
 {
     public static class ExportWithMinifyResources
     {
-        public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
+        public static void Run()
         {
             try
             {
@@ -19,7 +19,7 @@ namespace FusionExportTest
                 ExportConfig exportConfig = new ExportConfig();
 
                 // Instantiate the ExportManager class
-                using (ExportManager exportManager = new ExportManager())
+                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, Constants.DEFAULT_MINIFY_RESOURCES))
                 {
                     exportConfig.Set("chartConfig", chartConfigFile);
                     exportConfig.Set("templateFilePath", templateFilePath);

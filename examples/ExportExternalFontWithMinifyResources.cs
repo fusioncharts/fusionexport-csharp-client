@@ -6,28 +6,27 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class ExportUsingDefaultTemplates
+    public static class ExportExternalFontWithMinifyResources
     {
-        public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
+        public static void Run()
         {
             try
             {
                 List<string> results = new List<string>();
-                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\default_template.json";
+                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\chart-config-file.json";
+                string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\dashboard-template.html";
 
                 ExportConfig exportConfig = new ExportConfig();
 
                 // Instantiate the ExportManager class
-                using (ExportManager exportManager = new ExportManager())
+                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, true))
                 {
                     exportConfig.Set("chartConfig", chartConfigFile);
-                    exportConfig.Set("templateFormat", "A4");
-                    exportConfig.Set("header", "My Header");
-                    exportConfig.Set("subheader", "My Subheader");
+                    exportConfig.Set("templateFilePath", templateFilePath);
 
                     // Call the Export() method with the export config
                     //results.AddRange(exportManager.Export(exportConfig, @"D:\temp\exported-charts", true));
-                    results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true, false));
+                    results.AddRange(exportManager.Export(exportConfig, System.Environment.GetEnvironmentVariable("%TMP%", EnvironmentVariableTarget.User), true));
                 }
 
                 foreach (string path in results)

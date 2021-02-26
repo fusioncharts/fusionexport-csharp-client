@@ -46,6 +46,10 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NUglify, Version=1.13.2.0, Culture=neutral, PublicKeyToken=15bc7810aec21b5e, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUglify.1.13.2\lib\net40\NUglify.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,6 +64,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="static\resources\chart-config-file2.json">
+    <None Include="packages.config" />
+    <None Include="static\test\chart-config-file.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="static\resources\fonts\alex-brush\alexbrush-regular-webfont.woff">
@@ -133,6 +139,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="static\dashboard-template.html" />
     <Content Include="static\sample.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
