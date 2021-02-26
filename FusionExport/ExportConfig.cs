@@ -1030,7 +1030,6 @@ namespace FusionCharts.FusionExport.Client
 
                             ExportConfig.updateHtml(out htmlDoc, htmlDoc, "//link", fileBag);
                             ExportConfig.updateHtml(out htmlDoc, htmlDoc, "//script", fileBag);
-                            Console.WriteLine(htmlDoc.DocumentNode.WriteTo());
                             htmlFile = externalDir + "/temp.fusionexport.html";
                             File.WriteAllText(htmlFile, htmlDoc.DocumentNode.WriteTo());
 
