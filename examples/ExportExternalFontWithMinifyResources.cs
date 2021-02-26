@@ -13,7 +13,7 @@ namespace FusionExportTest
             try
             {
                 List<string> results = new List<string>();
-                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\chart-config-file.json";
+                string chartConfigFile = System.Environment.CurrentDirectory + "\\resources\\chart-config-file2.json";
                 string templateFilePath = System.Environment.CurrentDirectory + "\\resources\\dashboard-template.html";
 
                 ExportConfig exportConfig = new ExportConfig();
