@@ -99,9 +99,13 @@
     <None Include="resources\chart-config-file.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="resources\chart-config-file2.json" />
-    <None Include="resources\dashboard_charts.json" />
-    <None Include="resources\default_template.json">
+    <None Include="resources\chart-config-file2.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\dashboard_charts.json" >
+  	<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>    
+	<None Include="resources\default_template.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff">
