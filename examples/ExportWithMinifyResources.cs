@@ -19,7 +19,7 @@ namespace FusionExportTest
                 ExportConfig exportConfig = new ExportConfig();
 
                 // Instantiate the ExportManager class
-                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, Constants.DEFAULT_MINIFY_RESOURCES))
+                using (ExportManager exportManager = new ExportManager(Constants.DEFAULT_HOST, Constants.DEFAULT_PORT, Constants.DEFAULT_ISSECURE, true))
                 {
                     exportConfig.Set("chartConfig", chartConfigFile);
                     exportConfig.Set("templateFilePath", templateFilePath);

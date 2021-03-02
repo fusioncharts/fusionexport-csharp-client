@@ -1070,20 +1070,22 @@ namespace FusionCharts.FusionExport.Client
         {
             string property = target == "//script" || target == "//img" ? "src" : "href";
             HtmlNodeCollection tags = document.DocumentNode.SelectNodes(target);
-            foreach (var tag in tags)
+            if (tags != null)
             {
-                if (tag.HasAttributes && tag.Attributes[property] != null && isLocalResource(tag.Attributes[property].Value))
+                foreach (var tag in tags)
                 {
-                    var tagValue = tag.Attributes[property].Value.Replace(@"./", String.Empty);
-                    tagValue = tagValue.Replace("/", @"\");
-                    var found = fileBag.Find((linktag) => linktag.externalPath.Contains(tagValue) && tagValue.Length>0);
-                    if (found != null)
+                    if (tag.HasAttributes && tag.Attributes[property] != null && isLocalResource(tag.Attributes[property].Value))
                     {
-                        tag.SetAttributeValue(property, GetRelativePathFrom(found.internalPath, "template"));
+                        var tagValue = tag.Attributes[property].Value.Replace(@"./", String.Empty);
+                        tagValue = tagValue.Replace("/", @"\");
+                        var found = fileBag.Find((linktag) => linktag.externalPath.Contains(tagValue) && tagValue.Length > 0);
+                        if (found != null)
+                        {
+                            tag.SetAttributeValue(property, GetRelativePathFrom(found.internalPath, "template"));
+                        }
                     }
                 }
             }
-
             outDocument = document;
         }
     }
