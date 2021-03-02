@@ -59,7 +59,8 @@
     <Compile Include="BulkExport.cs" />
     <Compile Include="ChangeType.cs" />
     <Compile Include="Chartjs_Exp.cs" />
-    <Compile Include="ExportExternalFontWithMinifyResources.cs" />
+    <Compile Include="ExportLocalFontFromCssOnly.cs" />
+    <Compile Include="ExportLocalFontWithMinify.cs" />
     <Compile Include="ExportSingleViaHttps.cs" />
     <Compile Include="ExportWithMinifyResources.cs" />
     <Compile Include="ExportUsingDefaultTemplates.cs" />
@@ -68,7 +69,6 @@
     <Compile Include="ExcelExportXls.cs" />
     <Compile Include="ExcelExportCSV.cs" />
     <Compile Include="ExportLocalFont.cs" />
-    <Compile Include="ExportUsingDefaultTemplates.cs" />
     <Compile Include="ConvertSvg.cs" />
     <Compile Include="D3_Exp.cs" />
     <Compile Include="Dashboard.cs" />
@@ -102,10 +102,10 @@
     <None Include="resources\chart-config-file2.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="resources\dashboard_charts.json" >
-  	<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>    
-	<None Include="resources\default_template.json">
+    <None Include="resources\dashboard_charts.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="resources\default_template.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="resources\fonts\alex-brush\alexbrush-regular-webfont.woff">
@@ -172,6 +172,9 @@
     <Content Include="resources\chart.svg" />
     <Content Include="resources\dashboard-big-template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="resources\dashboard-template-css.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="resources\dashboard-template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

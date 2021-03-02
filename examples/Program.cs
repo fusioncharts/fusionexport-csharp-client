@@ -41,8 +41,9 @@ namespace examples
             //ExportUsingDefaultTemplates.Run();
             //ExportSingleViaHttps.Run("127.0.0.1", 1337, false);
             //ExportWithMinifyResources.Run();
-            // ExportExternalFontWithMinifyResources.Run();
-            ExportUsingDefaultTemplates.Run();
+            // ExportLocalFontWithMinify.Run();
+            ExportLocalFontWithMinify.Run();
+            //ExportUsingDefaultTemplates.Run();
             Console.ReadKey();
         }
     }

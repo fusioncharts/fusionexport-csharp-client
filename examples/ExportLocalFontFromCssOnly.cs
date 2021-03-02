@@ -6,7 +6,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class ExportLocalFont
+    public static class ExportLocalFontFromCSS
     {
         public static void Run(string host = Constants.DEFAULT_HOST, int port = Constants.DEFAULT_PORT)
         {

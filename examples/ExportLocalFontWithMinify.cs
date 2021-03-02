@@ -6,7 +6,7 @@ using FusionCharts.FusionExport.Client; // Import sdk
 
 namespace FusionExportTest
 {
-    public static class ExportExternalFontWithMinifyResources
+    public static class ExportLocalFontWithMinify
     {
         public static void Run()
         {
