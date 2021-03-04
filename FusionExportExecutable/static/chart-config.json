@@ -1,14 +1,15 @@
 ﻿[
   {
     "type": "column2d",
-    "renderAt": "chart-container",
+    "renderAt": "column_chart",
     "width": "550",
     "height": "350",
     "dataFormat": "json",
     "dataSource": {
       "chart": {
-        "caption": "Number of visitors \n last week",
-        "subCaption": "Bakersfield Central vs Los Angeles Topanga"
+        "caption": "Number of visitors in the last 3 days",
+        "subCaption": "Bakersfield Central vs Los Angeles Topanga",
+        "theme": "fusion"
       },
       "data": [
         {

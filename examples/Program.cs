@@ -11,9 +11,12 @@ namespace examples
     {
         static void Main(string[] args)
         {
+            //TimeSeries.Run();
+
             //SendEmail.Run();
             //Header_Footer.Run();
             //ExportSingleChart.Run();
+            //Default.Run();
             //BulkExport.Run();
             //Amcharts_Exp.Run();
             //AsyncCapture.Run();
@@ -30,6 +33,17 @@ namespace examples
             //OutputAsZip.Run();
             //Quality.Run();
             //ZingChart_Exp.Run();
+            //ExportLocalFont.Run();
+            //ExcelExportCSV.Run();
+            //ExcelExportXls.Run();
+            //ExcelExportMultiple.Run();
+            //ExcelExportMultiple2.Run();
+            //ExportUsingDefaultTemplates.Run();
+            //ExportSingleViaHttps.Run("127.0.0.1", 1337, false);
+            //ExportWithMinifyResources.Run();
+            // ExportLocalFontWithMinify.Run();
+            ExportLocalFontWithMinify.Run();
+            //ExportUsingDefaultTemplates.Run();
             Console.ReadKey();
         }
     }
