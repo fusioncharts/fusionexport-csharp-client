@@ -25,7 +25,7 @@ namespace examples
             //D3_Exp.Run();
             //Dashboard.Run();
             //ExportAsStream.Run();
-            //ExportMultipleCharts.Run();
+            ExportMultipleCharts.Run();
             //DashboardLogoHead.Run();
             //GoogleCharts_Exp.Run();
             //Highcharts_Exp.Run();
