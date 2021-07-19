@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>FusionExport</id>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
     <title>C# language SDK for FusionExport system</title>
     <authors>FusionCharts</authors>
     <owners>FusionCharts</owners>
@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Language SDK for FusionExport which enables exporting of charts and dashboards through C#.</description>
     <releaseNotes>Release Candidate(RC) release</releaseNotes>
-    <copyright>Copyright 2019</copyright>
+    <copyright>Copyright 2021</copyright>
     <tags>FusionCharts FusionExport Charts Export SDK Client</tags>
     <summary>C# language SDK for FusionExport system</summary>
   </metadata>
