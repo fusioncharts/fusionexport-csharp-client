@@ -10,20 +10,34 @@ namespace FusionCharts.FusionExport.Client
     {
         private string host;
         private int port;
+        private Boolean isSecure;
+        private Boolean minifyResources;
         private Exporter exporter = null;
 
         public ExportManager()
         {
             this.host = Constants.DEFAULT_HOST;
             this.port = Constants.DEFAULT_PORT;
-            exporter = new Exporter(this.host, this.port);
+            this.isSecure = Constants.DEFAULT_ISSECURE;
+            this.minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
         }
 
-        public ExportManager(string host, int port)
+        public ExportManager(string host, int port, Boolean isSecure)
         {
             this.host = host;
             this.port = port;
-            exporter = new Exporter(this.host, this.port);
+            this.isSecure = isSecure;
+            this.minifyResources = Constants.DEFAULT_MINIFY_RESOURCES;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
+        }
+        public ExportManager(string host, int port, Boolean isSecure, Boolean minifyResources)
+        {
+            this.host = host;
+            this.port = port;
+            this.isSecure = isSecure;
+            this.minifyResources = minifyResources;
+            exporter = new Exporter(this.host, this.port, this.isSecure, this.minifyResources);
         }
 
         ~ExportManager()
@@ -102,18 +116,18 @@ namespace FusionCharts.FusionExport.Client
 
         public List<string> Export(ExportConfig exportConfig, bool unzip)
         {
-            return (List<string>)ExportChart(exportConfig, null, unzip);
+            return (List<string>)ExportChart(exportConfig, null, unzip,false);
         }
 
-        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip)
+        public List<string> Export(ExportConfig exportConfig, string outputDir, bool unzip, Boolean exportBulk = true)
         {
+            exportConfig.Set("exportBulk", exportBulk);
             return (List<string>)ExportChart(exportConfig, outputDir, unzip);
         }
 
-
         public Dictionary<string, Stream> ExportAsStream(ExportConfig exportConfig)
         {
-            MemoryStream ms =(MemoryStream)ExportChart(exportConfig, "", false, true);
+            MemoryStream ms = (MemoryStream)ExportChart(exportConfig, "", false, true);
 
             Dictionary<string, Stream> files = new Dictionary<string, Stream>();
 
